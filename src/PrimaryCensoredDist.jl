@@ -18,9 +18,13 @@
     d = primarycensored(uncensored, censoring)
     ```
 "
+function primarycensored(
+        uncensored::UnivariateDistribution, censoring::UnivariateDistribution)
+    return PrimaryCensoredDist(uncensored, censoring)
+end
 
 @doc raw"
-Generic wrapper for a [`censored`](@ref) distribution.
+Generic wrapper for a primary event censored distribution.
 
 # Contructors
 
@@ -44,11 +48,6 @@ struct PrimaryCensoredDist{D1 <: UnivariateDistribution, D2 <: UnivariateDistrib
     uncensored::D1
     "The primary event censoring distribution."
     censoring::D2
-end
-
-function primarycensored(
-        uncensored::UnivariateDistribution, censoring::UnivariateDistribution)
-    return PrimaryCensoredDist(uncensored, censoring)
 end
 
 function params(d::PrimaryCensoredDist)
