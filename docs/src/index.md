@@ -1,6 +1,6 @@
-# EpiAware.jl
+# primarycensored.jl
 
-*Infectious disease situational awareness modelling toolkit for Julia.*
+*Primary event censored distributions for Julia.*
 
 ## Where to start
 

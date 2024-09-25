@@ -1,4 +1,4 @@
-name: Test EpiAware
+name: Test
 
 on:
   push:
