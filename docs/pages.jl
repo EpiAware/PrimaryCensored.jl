@@ -32,10 +32,10 @@ developer_pages = [
 ]
 
 pages = [
-    "EpiAware.jl: Real-time infectious disease monitoring" => "index.md",
+    "primarycensored.jl: Primary event censored distributions" => "index.md",
     "Getting started" => getting_started_pages,
     "Showcase" => showcase_pages,
-    "What is EpiAware?" => what_is_pages,
+    "What is primarycensored?" => what_is_pages,
     "Modules" => module_pages,
     "Developers" => developer_pages,
     "release-notes.md"
