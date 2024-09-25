@@ -5,7 +5,7 @@
 [![Test primarycensored](https://github.com/epinowcast/primarycensored.jl/actions/workflows/test-primarycensored.yaml/badge.svg)](https://github.com/epinowcast/primarycensored.jl/actions/workflows/test-primarycensored.yaml)
 [![codecov](https://codecov.io/gh/epinowcast/primarycensored.jl/graph/badge.svg?token=IX4GIA8F0H)](https://codecov.io/gh/epinowcast/primarycensored.jl)
 
-*An infectious disease situational awareness modelling toolkit for Julia.*
+*Primary censoring extension for Distributions.jl.*
 
 **Websites**: [Organization Website](https://www.epinowcast.org/) | [Documentation](https://www.primarycensored.epinowcast.org/)
 

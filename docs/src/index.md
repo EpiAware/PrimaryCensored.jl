@@ -1,6 +1,6 @@
 # primarycensored.jl
 
-*Primary event censored distributions for Julia.*
+*Primary censoring extension for Distributions.jl*
 
 ## Where to start
 
