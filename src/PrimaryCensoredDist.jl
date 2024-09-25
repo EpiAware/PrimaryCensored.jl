@@ -59,22 +59,28 @@ end
 Base.eltype(::Type{<:PrimaryCensoredDist{D}}) where {D} = promote_type(eltype(D), eltype(D))
 
 function Distributions.cdf(d::PrimaryCensoredDist, x::Real)
-    result = cdf(d.uncensored, x)
+    function f(u, x)
+        return exp(logcdf(d.uncensored, x) - logpdf(d.censoring, x - u))
+    end
+
+    domain = (max(1e-6, x - maximum(d.censoring)), x)
+    prob = IntegralProblem(f, domain, x)
+    result = solve(prob, QuadGKJL())
     return (result)
 end
 
 function Distributions.logcdf(d::PrimaryCensoredDist, x::Real)
-    result = logcdf(d.uncensored, x)
+    result = log(cdf(d, x))
     return result
 end
 
 function Distributions.ccdf(d::PrimaryCensoredDist, x::Real)
-    result = ccdf(d.uncensored, x)
+    result = 1 - cdf(d, x)
     return result
 end
 
 function Distributions.logccdf(d::PrimaryCensoredDist, x::Real)
-    result = logccdf(d.uncensored, x)
+    result = log(ccdf(d, x))
     return result
 end
 

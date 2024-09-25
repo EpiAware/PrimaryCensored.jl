@@ -4,6 +4,7 @@ module PrimaryCensored
 using DocStringExtensions
 using Distributions
 using Random
+using Integrals
 
 export primarycensored
 
