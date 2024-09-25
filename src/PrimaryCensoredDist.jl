@@ -69,7 +69,7 @@ function Distributions.cdf(d::PrimaryCensoredDist, x::Real)
     end
 
     function f(u, x)
-        return exp(logcdf(d.uncensored, x) - logpdf(d.censoring, x - u))
+        return exp(logcdf(d.uncensored, x) + logpdf(d.censoring, x - u))
     end
 
     domain = (max(1e-6, x - maximum(d.censoring)), x)
