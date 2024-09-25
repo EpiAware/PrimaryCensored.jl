@@ -7,7 +7,7 @@
 docs/build
 !docs/lib/*
 docs/src/checklist_files
-
+dev/
 # Data
 *.csv
 *.tsv
