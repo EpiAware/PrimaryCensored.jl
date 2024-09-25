@@ -1,10 +1,12 @@
 name = "primarycensored"
 uuid = "b2eeebe4-5992-4301-9193-7ebc9f62c855"
-authors = ["Samuel Abbott <azw1@cdc.gov>", "Samuel Brand <usi1@cdc.gov>"]
+authors = ["Samuel Abbott", "Damon Bayer", "Michael DeWitt", "Joseph Lemaitre"]
 version = "0.1.0-DEV"
 
 [deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+Integrals = "de52edbc-65ea-441a-8357-d3a637375a31"
 
 [compat]
 julia = ">= 1.9"
