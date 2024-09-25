@@ -1,1 +1,1 @@
-# [Overview of the primarycensored](@id overview)
+# [Overview of the PrimaryCensored](@id overview)

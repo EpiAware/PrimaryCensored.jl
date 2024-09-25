@@ -1,6 +1,6 @@
 module BenchPrimaryCensored
 
-using BenchmarkTools, primarycensored
+using BenchmarkTools, PrimaryCensored
 
 suite = BenchmarkGroup()
 

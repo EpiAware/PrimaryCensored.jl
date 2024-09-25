@@ -32,10 +32,10 @@ developer_pages = [
 ]
 
 pages = [
-    "primarycensored.jl: Primary event censored distributions" => "index.md",
+    "PrimaryCensored.jl: Primary event censored distributions" => "index.md",
     "Getting started" => getting_started_pages,
     "Showcase" => showcase_pages,
-    "What is primarycensored?" => what_is_pages,
+    "What is PrimaryCensored?" => what_is_pages,
     "Modules" => module_pages,
     "Developers" => developer_pages,
     "release-notes.md"

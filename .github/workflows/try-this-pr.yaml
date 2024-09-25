@@ -23,8 +23,8 @@ jobs:
               \`\`\`julia
               import Pkg
               Pkg.activate(temp=true)
-              Pkg.add(url="https://github.com/epinowcast/primarycensored.jl", rev="${context.payload.pull_request.head.ref}")
-              using primarycensored
+              Pkg.add(url="https://github.com/epinowcast/PrimaryCensored.jl", rev="${context.payload.pull_request.head.ref}")
+              using PrimaryCensored
               \`\`\`
               `
             })
