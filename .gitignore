@@ -6,6 +6,7 @@
 **/Manifest.toml
 docs/build
 !docs/lib/*
+docs/src/checklist_files
 
 # Data
 *.csv
