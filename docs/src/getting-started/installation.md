@@ -1,7 +1,7 @@
 # Installation
 
-Eventually, `primarycensored` is likely to be added to the Julia registry. Until then, you can install it from this repository by running the following command in the Julia REPL:
+Eventually, `PrimaryCensored` is likely to be added to the Julia registry. Until then, you can install it from this repository by running the following command in the Julia REPL:
 
 ```julia
-using Pkg; Pkg.add(url="https://github.com/epinowcast/primarycensored.jl")
+using Pkg; Pkg.add(url="https://github.com/epinowcast/PrimaryCensored.jl")
 ```

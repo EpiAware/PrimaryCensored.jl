@@ -15,7 +15,7 @@ jobs:
       - name: Delete preview and history + push changes
         run: |
             if [ -d "previews/PR$PRNUM" ]; then
-              git config user.name "primarycensored.jl"
+              git config user.name "PrimaryCensored.jl"
               git config user.email "primarycensored@primarycensored.epinowcast.org"
               git rm -rf "previews/PR$PRNUM"
               git commit -m "delete preview"

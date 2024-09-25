@@ -1,5 +1,5 @@
 using Documenter
-using primarycensored
+using PrimaryCensored
 using Pluto: Configuration.CompilerOptions
 using PlutoStaticHTML
 
@@ -11,13 +11,13 @@ build("getting-started")
 build("getting-started/tutorials")
 
 DocMeta.setdocmeta!(
-    primarycensored, :DocTestSetup, :(using primarycensored); recursive = true)
+    PrimaryCensored, :DocTestSetup, :(using PrimaryCensored); recursive = true)
 
-makedocs(; sitename = "primarycensored.jl",
+makedocs(; sitename = "PrimaryCensored.jl",
     authors = "Samuel Brand, Sam Abbott, and contributors",
     clean = true, doctest = false, linkcheck = true,
     warnonly = [:docs_block, :missing_docs, :linkcheck, :autodocs_block],
-    modules = [primarycensored],
+    modules = [PrimaryCensored],
     pages = pages,
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true",
@@ -28,7 +28,7 @@ makedocs(; sitename = "primarycensored.jl",
 )
 
 deploydocs(
-    repo = "github.com/epinowcast/primarycensored.jl.git",
+    repo = "github.com/epinowcast/PrimaryCensored.jl.git",
     target = "build",
     push_preview = true
 )

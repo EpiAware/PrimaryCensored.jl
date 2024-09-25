@@ -1,6 +1,6 @@
 # Internal Documentation
 
-Documentation for `primarycensored.jl`'s internal interface.
+Documentation for `PrimaryCensored.jl`'s internal interface.
 
 ## Contents
 
@@ -18,6 +18,6 @@ Pages = ["internals.md"]
 ## Internal API
 
 ```@autodocs
-Modules = [primarycensored]
+Modules = [PrimaryCensored]
 Public = false
 ```
