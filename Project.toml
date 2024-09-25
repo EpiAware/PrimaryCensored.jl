@@ -4,6 +4,8 @@ authors = ["Samuel Abbott", "Damon Bayer", "Michael DeWitt", "Joseph Lemaitre"]
 version = "0.1.0-DEV"
 
 [deps]
+DataFramesMeta = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 
 [compat]
