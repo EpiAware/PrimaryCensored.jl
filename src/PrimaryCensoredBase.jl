@@ -28,10 +28,4 @@ function Base.rand(pc::PrimaryCensored, n::Int)
     d1_samps = rand(pc.d1, n)
     d2_samps = rand(pc.d2, n)
     return d1_samps + d2_samps
-<<<<<<< HEAD
 end
-                PrimaryCensoredBeta{S,T}(d1,d2)
-
-=======
-end
->>>>>>> 7971cce (Fix the stackoverflow with multiple methods)
