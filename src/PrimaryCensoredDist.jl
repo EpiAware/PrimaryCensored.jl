@@ -12,10 +12,15 @@
     ```@example
     using PrimaryCensored, Distributions
 
-    uncensored = Normal()
+    uncensored = Normal(4, 1)
     censoring = Uniform(0, 1)
 
     d = primarycensored(uncensored, censoring)
+
+    rand(d, 10)
+
+    x = 0:10
+    cdf.(d, x)
     ```
 "
 function primarycensored(
@@ -59,17 +64,24 @@ end
 Base.eltype(::Type{<:PrimaryCensoredDist{D}}) where {D} = promote_type(eltype(D), eltype(D))
 
 function Distributions.cdf(d::PrimaryCensoredDist, x::Real)
+    if x <= 0
+        return 0
+    end
+
     function f(u, x)
         return exp(logcdf(d.uncensored, x) - logpdf(d.censoring, x - u))
     end
 
     domain = (max(1e-6, x - maximum(d.censoring)), x)
     prob = IntegralProblem(f, domain, x)
-    result = solve(prob, QuadGKJL())
+    result = solve(prob, QuadGKJL())[1]
     return (result)
 end
 
 function Distributions.logcdf(d::PrimaryCensoredDist, x::Real)
+    if x == -Inf
+        return -Inf
+    end
     result = log(cdf(d, x))
     return result
 end
