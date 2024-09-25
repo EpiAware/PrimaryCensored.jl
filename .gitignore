@@ -46,3 +46,4 @@ docs/build
 # benchmark ignore
 /.benchmarkci
 /benchmark/*.json
+.vscode

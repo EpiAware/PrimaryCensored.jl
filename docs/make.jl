@@ -1,11 +1,5 @@
 using Documenter
-using EpiAware
-using EpiAware.EpiAwareBase
-using EpiAware.EpiAwareUtils
-using EpiAware.EpiInference
-using EpiAware.EpiInfModels
-using EpiAware.EpiLatentModels
-using EpiAware.EpiObsModels
+using primarycensored
 using Pluto: Configuration.CompilerOptions
 using PlutoStaticHTML
 
@@ -15,17 +9,15 @@ include("build.jl")
 
 build("getting-started")
 build("getting-started/tutorials")
-build("showcase/replications/mishra-2020")
 
-DocMeta.setdocmeta!(EpiAware, :DocTestSetup, :(using EpiAware); recursive = true)
+DocMeta.setdocmeta!(
+    primarycensored, :DocTestSetup, :(using primarycensored); recursive = true)
 
-makedocs(; sitename = "EpiAware.jl",
-    authors = "Samuel Brand, Zachary Susswein, Sam Abbott, and contributors",
+makedocs(; sitename = "primarycensored.jl",
+    authors = "Samuel Brand, Sam Abbott, and contributors",
     clean = true, doctest = false, linkcheck = true,
     warnonly = [:docs_block, :missing_docs, :linkcheck, :autodocs_block],
-    modules = [
-        EpiAware, EpiAware.EpiAwareBase, EpiAware.EpiAwareUtils, EpiAware.EpiInference,
-        EpiAware.EpiInfModels, EpiAware.EpiLatentModels, EpiAware.EpiObsModels],
+    modules = [primarycensored],
     pages = pages,
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true",
@@ -36,7 +28,7 @@ makedocs(; sitename = "EpiAware.jl",
 )
 
 deploydocs(
-    repo = "github.com/CDCgov/Rt-without-renewal.git",
+    repo = "github.com/epinowcast/primarycensored.jl.git",
     target = "build",
     push_preview = true
 )

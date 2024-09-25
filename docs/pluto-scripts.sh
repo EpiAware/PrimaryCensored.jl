@@ -1,2 +1,2 @@
 #!/bin/sh
-julia --threads 4 --project=EpiAware/docs -e 'using Pluto; Pluto.run()'
+julia --threads 4 --project=docs -e 'using Pluto; Pluto.run()'
