@@ -4,6 +4,7 @@ authors = ["Samuel Abbott <azw1@cdc.gov>", "Samuel Brand <usi1@cdc.gov>"]
 version = "0.1.0-DEV"
 
 [deps]
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 
 [compat]
 julia = ">= 1.9"

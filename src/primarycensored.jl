@@ -1,26 +1,7 @@
-module EpiAware
+module primarycensored
 
 # Non-submodule imports
-using Turing, DocStringExtensions, Reexport, DynamicPPL, MCMCChains
-
-# Submodule imports
-include("EpiAwareBase/EpiAwareBase.jl")
-@reexport using .EpiAwareBase
-
-include("EpiAwareUtils/EpiAwareUtils.jl")
-@reexport using .EpiAwareUtils
-
-include("EpiLatentModels/EpiLatentModels.jl")
-@reexport using .EpiLatentModels
-
-include("EpiInfModels/EpiInfModels.jl")
-@reexport using .EpiInfModels
-
-include("EpiObsModels/EpiObsModels.jl")
-@reexport using .EpiObsModels
-
-include("EpiInference/EpiInference.jl")
-@reexport using .EpiInference
+using DocStringExtensions
 
 include("docstrings.jl")
 
