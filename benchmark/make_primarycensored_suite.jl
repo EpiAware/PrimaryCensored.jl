@@ -1,5 +1,5 @@
 """
-   A custom wrapper for the `TuringBenchmarking.make_turing_suite` that adds EpiAware specific defaults.
+   A custom wrapper for the `TuringBenchmarking.make_turing_suite` that adds primarycensored specific defaults.
 """
 function make_epiaware_suite(model; check = true,
         adbackends = [:forwarddiff, :reversediff, :reversediff_compiled])
