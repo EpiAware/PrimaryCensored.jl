@@ -91,7 +91,7 @@ samples = Vector{Int64}(undef, n);
 
 # ╔═╡ 51f266ce-ffca-4ffe-aae5-ab0fa0e16479
 for i in 1:n
-    primarycensored_dist = primarycensored(LogNormal(meanlog, sdlog), Unifosrm(0, pwindows[i]))
+    primarycensored_dist = primarycensored(LogNormal(meanlog, sdlog), Uniform(0, pwindows[i]))
 	trunc_primarycensored_dist = truncated(primarycensored_dist, 0, obs_times[i])
 	
 	# make it within range, normally using truncated here. FIXME
