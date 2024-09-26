@@ -54,7 +54,7 @@ We'll start by simulating some censored and truncated delay distribution data. W
 """
 
 # ╔═╡ b4409687-7bee-4028-824d-03b209aee68d
-Random.seed!(123) # Set seed for reproducibility
+Random.seed!(13345) # Set seed for reproducibility
 
 # ╔═╡ 30e99e77-aad1-43e8-9284-ab0bf8ae741f
 md"Define the parameters for the simulation"
@@ -82,14 +82,37 @@ obs_times = rand(8:10, n)
 # ╔═╡ 03f674b6-4812-43bb-b499-4a15c03ef6f7
 md"Placeholder for generating samples"
 
-# ╔═╡ cadec99a-aa04-4a86-bda5-a40b2cdb91bf
-d = primarycensored(LogNormal(meanlog, sdlog), Uniform(0, 1))
+# ╔═╡ 9a6460a4-bbc2-4496-9f7d-6c40b666cf67
+#samples=rand(d,n)
 
-# ╔═╡ 98a2cc22-c3c3-4ab4-9dea-8b2d7b7b4951
+# ╔═╡ a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
+samples = Vector{Int64}(undef, n)
+
+# ╔═╡ a78c57df-b697-4a47-a326-babcd53d84ca
+
+
+# ╔═╡ 51f266ce-ffca-4ffe-aae5-ab0fa0e16479
+for i in 1:n
+    d = primarycensored(LogNormal(meanlog, sdlog), Uniform(0, pwindows[i])) 
+	# make it within range, normally using truncated here
+	trc_evt = min(rand(d), obs_times[i])
+	samples[i] = (floor(trc_evt)/swindows[i])*swindows[i]
+end
+
+# ╔═╡ b785dc7b-02b0-4a51-b1b9-9505b7d1d7a8
+
+
+# ╔═╡ 8ea6883e-f157-4faf-9409-f91dd2581464
+samples
+
+# ╔═╡ 14b80719-efbd-469b-82a1-59faca13ca3d
 
 
 # ╔═╡ deef73cc-3418-42c2-bfed-4e0a7018aa75
-samples=rand(d,n)
+# ╠═╡ disabled = true
+#=╠═╡
+
+  ╠═╡ =#
 
 # ╔═╡ b860976d-3649-4ad5-9831-de1e84cba643
 
@@ -222,8 +245,13 @@ describe(chain)
 # ╠═2d0ca6e6-0333-4aec-93d4-43eb9985dc14
 # ╠═6465e51b-8d71-4c85-ba40-e6d230aa53b1
 # ╠═03f674b6-4812-43bb-b499-4a15c03ef6f7
-# ╠═cadec99a-aa04-4a86-bda5-a40b2cdb91bf
-# ╠═98a2cc22-c3c3-4ab4-9dea-8b2d7b7b4951
+# ╠═9a6460a4-bbc2-4496-9f7d-6c40b666cf67
+# ╠═a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
+# ╠═a78c57df-b697-4a47-a326-babcd53d84ca
+# ╠═51f266ce-ffca-4ffe-aae5-ab0fa0e16479
+# ╠═b785dc7b-02b0-4a51-b1b9-9505b7d1d7a8
+# ╠═8ea6883e-f157-4faf-9409-f91dd2581464
+# ╠═14b80719-efbd-469b-82a1-59faca13ca3d
 # ╠═deef73cc-3418-42c2-bfed-4e0a7018aa75
 # ╠═b860976d-3649-4ad5-9831-de1e84cba643
 # ╠═5aed77d3-5798-4538-b3eb-3f4ce43d0423
