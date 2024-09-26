@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ 9ed80f23-eac9-41e8-b0ca-7ddd01f02f49
-using DataFrames, Pkg, Turing, Distributions, DataFrames, Random, CairoMakie, StatsBase
+using DataFrames, Pkg, Turing, Distributions, add, CairoMakie, StatsBase
 
 # ╔═╡ 932b1cac-1705-43fb-bdae-91b97e39aef3
 Pkg.activate(temp=true)
