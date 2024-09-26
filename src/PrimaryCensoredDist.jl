@@ -101,3 +101,16 @@ end
 function Base.rand(rng::AbstractRNG, d::PrimaryCensoredDist)
     rand(rng, d.uncensored) + rand(rng, d.censoring)
 end
+
+function Base.rand(
+        rng::Random.AbstractRNG, d::Truncated{<:PrimaryCensored.PrimaryCensoredDist})
+    d0 = d.untruncated
+    lower = d.lower
+    upper = d.upper
+    while true
+        r = rand(rng, d0)
+        if Distributions._in_closed_interval(r, lower, upper)
+            return r
+        end
+    end
+end
