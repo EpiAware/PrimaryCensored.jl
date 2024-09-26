@@ -68,8 +68,36 @@ using PrimaryCensored, Distributions
 d = truncated(Normal(5,2), 0, 5)
 trunc_d = within_interval_censored(d, 2, 4)
 logpdf(trunc_d)
+rand(trunc_d)
 ```
 "
 function Distributions.logpdf(d::WithinIntervalCensored)
     return log(pdf(d))
+end
+
+@doc raw"
+Generate a random sample from a within-interval censored distribution.
+
+# Arguments
+- `rng`: Random number generator
+- `d`: WithinIntervalCensored distribution object
+
+# Returns
+A random sample from the within-interval censored distribution
+
+# Examples
+```@example
+using PrimaryCensored, Distributions
+d = truncated(Normal(5,2), 0, 5)
+trunc_d = within_interval_censored(d, 2, 4)
+rand(trunc_d)
+```
+"
+function Base.rand(
+        rng::Random.AbstractRNG, d::WithinIntervalCensored)
+    interval = d.upper - d.lower
+    r = rand(rng, d.dist)
+    # Adjust r to be within the interval
+    r = floor(r / interval) * interval
+    return r
 end
