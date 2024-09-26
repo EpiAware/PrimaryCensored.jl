@@ -27,34 +27,37 @@ md"""
 We'll demonstrate how to use `PrimaryCensored.jl` in conjunction with Turing.jl for Bayesian inference of epidemiological delay distributions. We'll cover the following key points:
 
 1. Simulating censored delay distribution data
-2. Fitting a naive model using cTuring.jl
+2. Fitting a naive model using Turing.jl
 3. Evaluating the naive model's performance
-4. Fitting an improved model using `PrimaryCensored.jl.` functionality
+4. Fitting an improved model using `PrimaryCensored.jl` functionality
 5. Comparing the `PrimaryCensored.jl` model's performance to the naive model
 
 ## What might I need to know before starting
 
-This vignette builds on the concepts introduced in the [Getting Started with PrimaryCensored.jl](FIXME.html) vignette and assumes familiarity with using Turing.jl tools
+This vignette builds on the concepts introduced in the [Getting Started with PrimaryCensored.jl](FIXME.html) vignette and assumes familiarity with using Turing.jl.
 
 ## Packages used
-TODO
+We use CairoMakie for plotting, Turing for probabilistic programming, and the _classics_ DataFrames, Random, StatsBase (for the ecdf function). We install the PrimaryCensored.jl packages from the github repo.
 """
 
+# ╔═╡ 960b18ef-ab1d-417f-853e-d05d2cddc78f
+# FIXME: PrimaryCensored.jl installation 
+
 # ╔═╡ 8c77f9db-72a7-4a09-88fa-ac3fea030f84
-CairoMakie.activate!(type = "svg")
+CairoMakie.activate!(type = "svg")  # necessary ?
 
 # ╔═╡ cb58eb18-aabb-4daf-94dc-a4b101791fdd
-Makie.inline!(true)
+Makie.inline!(true) # necessary ?
 
 # ╔═╡ c5ec0d58-ce3d-4b0b-a261-dbd37b119f71
 md"""
 # Simulating censored and truncated delay distribution data
 
-We'll start by simulating some censored and truncated delay distribution data. We'll use the `FIXME` function.
+We'll start by simulating some censored and truncated delay distribution data. We'll use the `primarycensored` function.
 """
 
 # ╔═╡ b4409687-7bee-4028-824d-03b209aee68d
-Random.seed!(13345) # Set seed for reproducibility
+Random.seed!(12345) # Set seed for reproducibility
 
 # ╔═╡ 30e99e77-aad1-43e8-9284-ab0bf8ae741f
 md"Define the parameters for the simulation"
@@ -68,7 +71,8 @@ meanlog = 1.5
 # ╔═╡ 54700ad7-6b2a-440f-903a-c126b4c60c0e
 sdlog = 0.75
 
-# Generate varying pwindow, swindow, and obs_time lengths
+# ╔═╡ 767a58ed-9d7b-41db-a488-10f98a777474
+md"we generate varying pwindow, swindow, and obs_time lengths"
 
 # ╔═╡ 35472e04-e096-4948-a218-3de53923f271
 pwindows = rand(1:2, n)
@@ -79,43 +83,27 @@ swindows = rand(1:2, n)
 # ╔═╡ 6465e51b-8d71-4c85-ba40-e6d230aa53b1
 obs_times = rand(8:10, n)
 
-# ╔═╡ 03f674b6-4812-43bb-b499-4a15c03ef6f7
-md"Placeholder for generating samples"
-
-# ╔═╡ 9a6460a4-bbc2-4496-9f7d-6c40b666cf67
-#samples=rand(d,n)
+# ╔═╡ 2e04be98-625f-45f4-bf5e-a0074ea1ea01
+md"Let's generates all the $n$ samples:"
 
 # ╔═╡ a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
-samples = Vector{Int64}(undef, n)
-
-# ╔═╡ a78c57df-b697-4a47-a326-babcd53d84ca
-
+samples = Vector{Int64}(undef, n);
 
 # ╔═╡ 51f266ce-ffca-4ffe-aae5-ab0fa0e16479
 for i in 1:n
-    d = primarycensored(LogNormal(meanlog, sdlog), Uniform(0, pwindows[i])) 
-	# make it within range, normally using truncated here
-	trc_evt = min(rand(d), obs_times[i])
-	samples[i] = (floor(trc_evt)/swindows[i])*swindows[i]
+    primarycensored_dist = primarycensored(LogNormal(meanlog, sdlog), Uniform(0, pwindows[i]))
+	trunc_primarycensored_dist = truncated(primarycensored_dist, 0, obs_times[i])
+	
+	# make it within range, normally using truncated here. FIXME
+	#trc_evt = min(rand(d), )
+	samples[i] = (floor(rand(trunc_primarycensored_dist))/swindows[i])*swindows[i]
 end
-
-# ╔═╡ b785dc7b-02b0-4a51-b1b9-9505b7d1d7a8
-
 
 # ╔═╡ 8ea6883e-f157-4faf-9409-f91dd2581464
 samples
 
-# ╔═╡ 14b80719-efbd-469b-82a1-59faca13ca3d
-
-
-# ╔═╡ deef73cc-3418-42c2-bfed-4e0a7018aa75
-# ╠═╡ disabled = true
-#=╠═╡
-
-  ╠═╡ =#
-
-# ╔═╡ b860976d-3649-4ad5-9831-de1e84cba643
-
+# ╔═╡ 50757759-9ec3-42d0-a765-df212642885a
+md"Create a dataframe with the data we just generated"
 
 # ╔═╡ 5aed77d3-5798-4538-b3eb-3f4ce43d0423
 delay_data = DataFrame(
@@ -126,18 +114,23 @@ delay_data = DataFrame(
 )
 
 # ╔═╡ 06d2d1a0-883f-4f79-b94d-e4c94647e208
-first(delay_data, 6)
+#first(delay_data, 6)
+
+# ╔═╡ bfef454d-3664-49de-b8ae-10c529f5a64b
+md"Aggregate to unique combinations and count occurrences"
+
+# ╔═╡ cd9e4e56-301d-44b8-b013-9cf9196e7e90
+
 
 # ╔═╡ 181e3bbd-d95b-4c50-87a9-75f4851e85a1
 delay_counts = combine(groupby(delay_data, [:pwindow, :obs_time, :observed_delay, :observed_delay_upper]), nrow => :n)
 
-# ╔═╡ ba3ee686-2b8d-4afb-9d94-e621d25b0d72
-first(delay_counts, 6)
+# ╔═╡ 993f1f74-4a55-47a7-9e3e-c725cba13c0a
+md"""
+Compare the samples with and without secondary censoring to the true distribution. First let's calculate empirical CDF:
+"""
 
 # ╔═╡ 5a6d605d-bff6-4b7d-97f0-ca35750411d3
-# Compare the samples with and without secondary censoring to the true
-# distribution
-# Calculate empirical CDF
 empirical_cdf = ecdf(samples)
 
 # ╔═╡ 2b773594-5187-45bc-96f4-22a3d726b7d2
@@ -194,9 +187,6 @@ Fitting a naive model using Turing.jl
 We'll start by fitting a naive model using Turing.jl. We'll use the `Turing.jl` package to interface with Turing.jl. We define the model in a string and then write it to a file as in the [How to use primarycensoreddist with Stan](using-stan-tools.html) vignette.
 """
 
-# ╔═╡ f36711c9-e7ef-482c-92c0-fe4a0cebec2a
-
-
 # ╔═╡ d995059c-81f7-441c-8695-6ba08c90a1f8
 N = nrow(delay_counts)
 
@@ -230,6 +220,7 @@ describe(chain)
 # ╔═╡ Cell order:
 # ╠═30511a27-984e-40b7-9b1e-34bc87cb8d56
 # ╠═9ed80f23-eac9-41e8-b0ca-7ddd01f02f49
+# ╠═960b18ef-ab1d-417f-853e-d05d2cddc78f
 # ╠═932b1cac-1705-43fb-bdae-91b97e39aef3
 # ╠═b84fe36a-e673-48a6-a57f-c534608ae9bb
 # ╠═842769b4-a499-41f6-baf1-3b54f14262d4
@@ -241,23 +232,21 @@ describe(chain)
 # ╠═28bcd612-19f6-4e25-b6df-cb43df4f2a73
 # ╠═04e414ab-c790-4d31-b216-18776534a287
 # ╠═54700ad7-6b2a-440f-903a-c126b4c60c0e
+# ╠═767a58ed-9d7b-41db-a488-10f98a777474
 # ╠═35472e04-e096-4948-a218-3de53923f271
 # ╠═2d0ca6e6-0333-4aec-93d4-43eb9985dc14
 # ╠═6465e51b-8d71-4c85-ba40-e6d230aa53b1
-# ╠═03f674b6-4812-43bb-b499-4a15c03ef6f7
-# ╠═9a6460a4-bbc2-4496-9f7d-6c40b666cf67
+# ╠═2e04be98-625f-45f4-bf5e-a0074ea1ea01
 # ╠═a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
-# ╠═a78c57df-b697-4a47-a326-babcd53d84ca
 # ╠═51f266ce-ffca-4ffe-aae5-ab0fa0e16479
-# ╠═b785dc7b-02b0-4a51-b1b9-9505b7d1d7a8
 # ╠═8ea6883e-f157-4faf-9409-f91dd2581464
-# ╠═14b80719-efbd-469b-82a1-59faca13ca3d
-# ╠═deef73cc-3418-42c2-bfed-4e0a7018aa75
-# ╠═b860976d-3649-4ad5-9831-de1e84cba643
+# ╠═50757759-9ec3-42d0-a765-df212642885a
 # ╠═5aed77d3-5798-4538-b3eb-3f4ce43d0423
 # ╠═06d2d1a0-883f-4f79-b94d-e4c94647e208
+# ╠═bfef454d-3664-49de-b8ae-10c529f5a64b
+# ╠═cd9e4e56-301d-44b8-b013-9cf9196e7e90
 # ╠═181e3bbd-d95b-4c50-87a9-75f4851e85a1
-# ╠═ba3ee686-2b8d-4afb-9d94-e621d25b0d72
+# ╠═993f1f74-4a55-47a7-9e3e-c725cba13c0a
 # ╠═5a6d605d-bff6-4b7d-97f0-ca35750411d3
 # ╠═2b773594-5187-45bc-96f4-22a3d726b7d2
 # ╠═a5b04acc-acc5-4d4d-8871-09d54caab185
@@ -265,7 +254,6 @@ describe(chain)
 # ╠═fb6dc898-21a9-4f8d-aa14-5b45974c2242
 # ╠═9c8aebbe-8606-41e7-8e86-23129b1cbc8d
 # ╠═91279812-9848-48bc-9258-b6f86c9fe923
-# ╠═f36711c9-e7ef-482c-92c0-fe4a0cebec2a
 # ╠═d995059c-81f7-441c-8695-6ba08c90a1f8
 # ╠═a59d820c-616d-42ff-a0b3-d495d9f529f8
 # ╠═a257ce07-efbe-45e1-a8b0-ada40c29de8d

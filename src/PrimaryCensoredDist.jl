@@ -12,10 +12,15 @@
     ```@example
     using PrimaryCensored, Distributions
 
-    uncensored = Normal()
+    uncensored = Normal(4, 1)
     censoring = Uniform(0, 1)
 
     d = primarycensored(uncensored, censoring)
+
+    rand(d, 10)
+
+    x = 0:10
+    cdf.(d, x)
     ```
 "
 function primarycensored(
@@ -59,22 +64,35 @@ end
 Base.eltype(::Type{<:PrimaryCensoredDist{D}}) where {D} = promote_type(eltype(D), eltype(D))
 
 function Distributions.cdf(d::PrimaryCensoredDist, x::Real)
-    result = cdf(d.uncensored, x)
+    if x <= 0
+        return 0
+    end
+
+    function f(u, x)
+        return exp(logcdf(d.uncensored, x) + logpdf(d.censoring, x - u))
+    end
+
+    domain = (max(1e-6, x - maximum(d.censoring)), x)
+    prob = IntegralProblem(f, domain, x)
+    result = solve(prob, QuadGKJL())[1]
     return (result)
 end
 
 function Distributions.logcdf(d::PrimaryCensoredDist, x::Real)
-    result = logcdf(d.uncensored, x)
+    if x == -Inf
+        return -Inf
+    end
+    result = log(cdf(d, x))
     return result
 end
 
 function Distributions.ccdf(d::PrimaryCensoredDist, x::Real)
-    result = ccdf(d.uncensored, x)
+    result = 1 - cdf(d, x)
     return result
 end
 
 function Distributions.logccdf(d::PrimaryCensoredDist, x::Real)
-    result = logccdf(d.uncensored, x)
+    result = log(ccdf(d, x))
     return result
 end
 
@@ -82,4 +100,17 @@ end
 
 function Base.rand(rng::AbstractRNG, d::PrimaryCensoredDist)
     rand(rng, d.uncensored) + rand(rng, d.censoring)
+end
+
+function Base.rand(
+        rng::Random.AbstractRNG, d::Truncated{<:PrimaryCensored.PrimaryCensoredDist})
+    d0 = d.untruncated
+    lower = d.lower
+    upper = d.upper
+    while true
+        r = rand(rng, d0)
+        if Distributions._in_closed_interval(r, lower, upper)
+            return r
+        end
+    end
 end
