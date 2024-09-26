@@ -44,10 +44,10 @@ We use CairoMakie for plotting, Turing for probabilistic programming, and the _c
 # FIXME: PrimaryCensored.jl installation
 
 # ╔═╡ 8c77f9db-72a7-4a09-88fa-ac3fea030f84
-#Makie.activate!(type = "svg")  # necessary ?
+# CairoMakie.activate!(type = "svg")  # necessary ?
 
 # ╔═╡ cb58eb18-aabb-4daf-94dc-a4b101791fdd
-Makie.inline!(true) # necessary ?
+# CairoMakie.inline!(true) # necessary ?
 
 # ╔═╡ c5ec0d58-ce3d-4b0b-a261-dbd37b119f71
 md"""
