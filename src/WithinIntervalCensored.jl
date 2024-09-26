@@ -98,6 +98,6 @@ function Base.rand(
     interval = d.upper - d.lower
     r = rand(rng, d.dist)
     # Adjust r to be within the interval
-    r = floor(r / interval)
+    r = floor(r / interval) * interval
     return r
 end
