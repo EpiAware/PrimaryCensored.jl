@@ -47,7 +47,7 @@ We use CairoMakie for plotting, Turing for probabilistic programming, and the _c
 CairoMakie.activate!(type = "svg")  # necessary ?
 
 # ╔═╡ cb58eb18-aabb-4daf-94dc-a4b101791fdd
-Makie.inline!(true)
+Makie.inline!(true) # necessary ?
 
 # ╔═╡ c5ec0d58-ce3d-4b0b-a261-dbd37b119f71
 md"""
@@ -57,7 +57,7 @@ We'll start by simulating some censored and truncated delay distribution data. W
 """
 
 # ╔═╡ b4409687-7bee-4028-824d-03b209aee68d
-Random.seed!(13345) # Set seed for reproducibility
+Random.seed!(12345) # Set seed for reproducibility
 
 # ╔═╡ 30e99e77-aad1-43e8-9284-ab0bf8ae741f
 md"Define the parameters for the simulation"
@@ -91,10 +91,12 @@ samples = Vector{Int64}(undef, n);
 
 # ╔═╡ 51f266ce-ffca-4ffe-aae5-ab0fa0e16479
 for i in 1:n
-    d = primarycensored(LogNormal(meanlog, sdlog), Uniform(0, pwindows[i])) 
+    primarycensored_dist = primarycensored(LogNormal(meanlog, sdlog), Uniform(0, pwindows[i]))
+	trunc_primarycensored_dist = truncated(primarycensored_dist, 0, obs_times[i])
+	
 	# make it within range, normally using truncated here. FIXME
-	trc_evt = min(rand(d), obs_times[i])
-	samples[i] = (floor(trc_evt)/swindows[i])*swindows[i]
+	#trc_evt = min(rand(d), )
+	samples[i] = (floor(rand(trunc_primarycensored_dist))/swindows[i])*swindows[i]
 end
 
 # ╔═╡ 8ea6883e-f157-4faf-9409-f91dd2581464
@@ -185,9 +187,6 @@ Fitting a naive model using Turing.jl
 We'll start by fitting a naive model using Turing.jl. We'll use the `Turing.jl` package to interface with Turing.jl. We define the model in a string and then write it to a file as in the [How to use primarycensoreddist with Stan](using-stan-tools.html) vignette.
 """
 
-# ╔═╡ f36711c9-e7ef-482c-92c0-fe4a0cebec2a
-
-
 # ╔═╡ d995059c-81f7-441c-8695-6ba08c90a1f8
 N = nrow(delay_counts)
 
@@ -255,7 +254,6 @@ describe(chain)
 # ╠═fb6dc898-21a9-4f8d-aa14-5b45974c2242
 # ╠═9c8aebbe-8606-41e7-8e86-23129b1cbc8d
 # ╠═91279812-9848-48bc-9258-b6f86c9fe923
-# ╠═f36711c9-e7ef-482c-92c0-fe4a0cebec2a
 # ╠═d995059c-81f7-441c-8695-6ba08c90a1f8
 # ╠═a59d820c-616d-42ff-a0b3-d495d9f529f8
 # ╠═a257ce07-efbe-45e1-a8b0-ada40c29de8d
