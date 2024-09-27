@@ -6,24 +6,24 @@ using InteractiveUtils
 
 # ╔═╡ bb9c75db-6638-48fe-afcb-e78c4bcc057d
 begin
-let
-    docs_dir = dirname(dirname(@__DIR__))
-    println(docs_dir)
-    pkg_dir = dirname(docs_dir)
-    println(pkg_dir)
-    using Pkg: Pkg
-    Pkg.activate(docs_dir)
-    Pkg.develop(; path = pkg_dir)
-    Pkg.instantiate()
-end
+    let
+        docs_dir = dirname(dirname(@__DIR__))
+        println(docs_dir)
+        pkg_dir = dirname(docs_dir)
+        println(pkg_dir)
+        using Pkg: Pkg
+        Pkg.activate(docs_dir)
+        Pkg.develop(; path = pkg_dir)
+        Pkg.instantiate()
+    end
 end
 
 # ╔═╡ 3690c122-d630-4fd0-aaf2-aea9226df086
 begin
     using DataFrames
-	using Turing
-	using Distributions
-	using Random
+    using Turing
+    using Distributions
+    using Random
 	using CairoMakie
 	using StatsBase
 	using PrimaryCensored
