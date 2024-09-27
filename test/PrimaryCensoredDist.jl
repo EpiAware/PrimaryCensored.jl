@@ -32,7 +32,7 @@ end
 @testitem  "Test cdf method" begin
     using Distributions
     use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
-    @test cdf(use_dist,1e8) ≈ 1.0
+    @test cdf(use_dist, 1e8) ≈ 1.0
 end
 
 
