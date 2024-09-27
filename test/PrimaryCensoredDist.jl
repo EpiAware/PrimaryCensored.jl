@@ -8,17 +8,27 @@ function generate_object()
 end
 
 # Bad inputs
-@test_throws MethodError primarycensored(Normal(1,2), 7)
+@testitem "struct" begin
+    @test_throws MethodError primarycensored(Normal(1,2), 7)
+end
 
-# Test constructor
-@test typeof(generate_object()) <: PrimaryCensored.PrimaryCensoredDist
 
-# Test random generation
-@test length(rand(generate_object(),10)) == 10
+@testitem "Test constructor" begin
+    @test typeof(generate_object()) <: PrimaryCensored.PrimaryCensoredDist
+end
 
-# Test cdf method
-@test cdf(generate_object(),1e8) ≈ 1.0
 
-# Test ccdf
-@test ccdf(generate_object(),1e8) ≈ 0.0
-@test ccdf(generate_object(), 0.0) ≈ 1
+@testitem "Test random generation" begin
+    @test length(rand(generate_object(),10)) == 10
+end
+
+@testitem  "Test cdf method" begin
+    @test cdf(generate_object(),1e8) ≈ 1.0
+end
+
+
+@testitem "Test ccdf" begin
+    @test ccdf(generate_object(),1e8) ≈ 0.0
+    @test ccdf(generate_object(), 0.0) ≈ 1
+end
+
