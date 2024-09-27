@@ -17,7 +17,6 @@ end
     @test typeof(generate_object()) <: PrimaryCensored.PrimaryCensoredDist
 end
 
-
 @testitem "Test random generation" begin
     @test length(rand(generate_object(),10)) == 10
 end
