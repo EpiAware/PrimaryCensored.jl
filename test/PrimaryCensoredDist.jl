@@ -26,7 +26,6 @@ end
     @test length(use_dist_trunc_rn) ≈ 1e6
     @test maximum(use_dist_trunc_rn) <= 10
     @test minimum(use_dist_trunc_rn) >= 3
-
 end
 
 @testitem "Test cdf method" begin
@@ -34,7 +33,6 @@ end
     use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
     @test cdf(use_dist, 1e8) ≈ 1.0
 end
-
 
 @testitem "Test ccdf" begin
     using Distributions
