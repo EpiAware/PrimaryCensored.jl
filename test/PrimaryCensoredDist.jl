@@ -22,8 +22,8 @@ end
     @test length(rand(use_dist, 10)) == 10
 
     use_dist_trunc = truncated(use_dist, 3, 10)
-    use_dist_trunc_rn = rand(use_dist_trunc, 1e6)
-    @test length(use_dist_trunc_rn) == 1e6
+    use_dist_trunc_rn = rand(use_dist_trunc, 1000000)
+    @test length(use_dist_trunc_rn) ≈ 1e6
     @test maximum(use_dist_trunc_rn) <= 10
     @test minimum(use_dist_trunc_rn) >= 3
 
@@ -43,3 +43,7 @@ end
     @test ccdf(use_dist, 0.0) ≈ 1
 end
 
+@testitem "Get parameters" begin
+    using Distributions
+    use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
+end
