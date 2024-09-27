@@ -1,20 +1,32 @@
 ### A Pluto.jl notebook ###
-# v0.19.46
+# v0.19.40
 
 using Markdown
 using InteractiveUtils
 
-# ╔═╡ 9ed80f23-eac9-41e8-b0ca-7ddd01f02f49
-using DataFrames, Pkg, Turing, Distributions, Random, CairoMakie, StatsBase
+# ╔═╡ bb9c75db-6638-48fe-afcb-e78c4bcc057d
+begin
+let
+    docs_dir = dirname(dirname(dirname(@__DIR__)))
+    pkg_dir = dirname(docs_dir)
 
-# ╔═╡ 932b1cac-1705-43fb-bdae-91b97e39aef3
-Pkg.activate(temp = true)
+    using Pkg: Pkg
+    Pkg.activate(docs_dir)
+    Pkg.develop(; path = pkg_dir)
+    Pkg.instantiate()
+end
+end
 
-# ╔═╡ b84fe36a-e673-48a6-a57f-c534608ae9bb
-Pkg.add(url = "https://github.com/epinowcast/PrimaryCensored.jl", rev = "main")
-
-# ╔═╡ 842769b4-a499-41f6-baf1-3b54f14262d4
-using PrimaryCensored
+# ╔═╡ 3690c122-d630-4fd0-aaf2-aea9226df086
+begin
+    using DataFrames
+	using Turing
+	using Distributions
+	using Random
+	using CairoMakie
+	using StatsBase
+	using PrimaryCensored
+end
 
 # ╔═╡ 30511a27-984e-40b7-9b1e-34bc87cb8d56
 md"""
@@ -40,8 +52,23 @@ This vignette builds on the concepts introduced in the [Getting Started with Pri
 We use CairoMakie for plotting, Turing for probabilistic programming, and the _classics_ DataFrames, Random, StatsBase (for the ecdf function). We install the PrimaryCensored.jl packages from the github repo.
 """
 
+# ╔═╡ 80ce4590-e51a-457c-8497-d16916688656
+
+
+# ╔═╡ 320f081c-b26e-495a-9887-56c4212d1ed7
+
+
 # ╔═╡ 960b18ef-ab1d-417f-853e-d05d2cddc78f
 # FIXME: PrimaryCensored.jl installation
+
+# ╔═╡ 932b1cac-1705-43fb-bdae-91b97e39aef3
+#Pkg.activate(temp = true)
+
+# ╔═╡ b84fe36a-e673-48a6-a57f-c534608ae9bb
+#Pkg.add(url = "https://github.com/epinowcast/PrimaryCensored.jl", rev = "main")
+
+# ╔═╡ 842769b4-a499-41f6-baf1-3b54f14262d4
+#using PrimaryCensored
 
 # ╔═╡ 8c77f9db-72a7-4a09-88fa-ac3fea030f84
 # CairoMakie.activate!(type = "svg")  # necessary ?
@@ -57,7 +84,7 @@ We'll start by simulating some censored and truncated delay distribution data. W
 """
 
 # ╔═╡ b4409687-7bee-4028-824d-03b209aee68d
-Random.seed!(12345) # Set seed for reproducibility
+Random.seed!(1234) # Set seed for reproducibility
 
 # ╔═╡ 30e99e77-aad1-43e8-9284-ab0bf8ae741f
 md"Define the parameters for the simulation"
@@ -115,12 +142,13 @@ delay_data = DataFrame(
 )
 
 # ╔═╡ 06d2d1a0-883f-4f79-b94d-e4c94647e208
-#first(delay_data, 6)
+first(delay_data, 6)
 
 # ╔═╡ bfef454d-3664-49de-b8ae-10c529f5a64b
 md"Aggregate to unique combinations and count occurrences"
 
 # ╔═╡ cd9e4e56-301d-44b8-b013-9cf9196e7e90
+
 
 # ╔═╡ 181e3bbd-d95b-4c50-87a9-75f4851e85a1
 delay_counts = combine(
@@ -213,6 +241,7 @@ end
 
 # ╔═╡ 49846128-379c-4c3b-9ec1-567ffa92e079
 
+
 # ╔═╡ 4cf596f1-0042-4990-8d0a-caa8ba1db0c7
 model = naive_model(y = y, n = delay_counts.n, N = nrow(delay_counts))
 
@@ -224,7 +253,10 @@ describe(chain)
 
 # ╔═╡ Cell order:
 # ╠═30511a27-984e-40b7-9b1e-34bc87cb8d56
-# ╠═9ed80f23-eac9-41e8-b0ca-7ddd01f02f49
+# ╠═bb9c75db-6638-48fe-afcb-e78c4bcc057d
+# ╠═3690c122-d630-4fd0-aaf2-aea9226df086
+# ╠═80ce4590-e51a-457c-8497-d16916688656
+# ╠═320f081c-b26e-495a-9887-56c4212d1ed7
 # ╠═960b18ef-ab1d-417f-853e-d05d2cddc78f
 # ╠═932b1cac-1705-43fb-bdae-91b97e39aef3
 # ╠═b84fe36a-e673-48a6-a57f-c534608ae9bb
