@@ -24,9 +24,9 @@ begin
     using Turing
     using Distributions
     using Random
-	using CairoMakie
-	using StatsBase
-	using PrimaryCensored
+    using CairoMakie
+    using StatsBase
+    using PrimaryCensored
 end
 
 # ╔═╡ 30511a27-984e-40b7-9b1e-34bc87cb8d56
