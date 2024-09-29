@@ -28,10 +28,20 @@ end
     @test minimum(use_dist_trunc_rn) >= 3
 end
 
+@tesitem "Params calls" begin
+    using Distributions
+    use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
+    extracted_params = params(use_dist)
+    @test length(extracted_params) == 4
+    @test extracted_params[1] ≈ 3.5
+    @test extracted_params[3] ≈ 1.0
+end
+
 @testitem "Test cdf method" begin
     using Distributions
     use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
     @test cdf(use_dist, 1e8) ≈ 1.0
+    @test logcdf(use_dist, -Inf) ≈ -Inf
 end
 
 @testitem "Test ccdf" begin
@@ -39,9 +49,5 @@ end
     use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
     @test ccdf(use_dist, 1e8) ≈ 0.0
     @test ccdf(use_dist, 0.0) ≈ 1
-end
-
-@testitem "Get parameters" begin
-    using Distributions
-    use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
+    @test logccdf(use_dist, 0.0) ≈ 0.0
 end
