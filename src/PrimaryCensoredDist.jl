@@ -55,7 +55,7 @@ struct PrimaryCensoredDist{D1 <: UnivariateDistribution, D2 <: UnivariateDistrib
     censoring::D2
 end
 
-function params(d::PrimaryCensoredDist)
+function Distributions.params(d::PrimaryCensoredDist)
     d0params = params(d.uncensored)
     d1params = params(d.censoring)
     return (d0params..., d1params...)
