@@ -20,9 +20,9 @@ end
 @testitem "Test random generation" begin
     using Distributions
     using Random
-    use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
-    use_dist_trunc = truncated(use_dist, 3, 10)
-    use_dist_censored = within_interval_censored(use_dist_trunc, 3, 10)
+    use_dist = primarycensored(LogNormal(1.5, 0.75), Uniform(0, 1))
+    use_dist_trunc = truncated(use_dist, 0, 10)
+    use_dist_censored = within_interval_censored(use_dist_trunc, 0, 1)
     rng = MersenneTwister(1234)
     @test length(rand(rng, use_dist_censored)) == 1
 
