@@ -19,6 +19,7 @@ end
 
 @testitem "Test random generation" begin
     using Distributions
+    using Random
     use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
     use_dist_trunc = truncated(use_dist, 3, 10)
     use_dist_censored = within_interval_censored(use_dist_trunc, 3, 10)
