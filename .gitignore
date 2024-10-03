@@ -48,3 +48,6 @@ dev/
 /.benchmarkci
 /benchmark/*.json
 .vscode
+
+# Helpers
+justfile
