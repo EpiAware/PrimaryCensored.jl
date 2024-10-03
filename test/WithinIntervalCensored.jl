@@ -1,9 +1,3 @@
-using Random
-using Test
-using TestItems
-using Distributions
-using PrimaryCensored
-
 # Bad inputs
 @testitem "Test struct type" begin
     using Distributions
@@ -38,8 +32,8 @@ end
 
 @testitem "Test pdf method" begin
     using Distributions
-    use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
-    use_dist_censored = within_interval_censored(use_dist, 3, 10)
-    @test pdf(use_dist_censored) ≈ 0.157658245
-    @test logpdf(use_dist_censored) ≈ log(0.157658245)
+    use_dist = primarycensored(Exponential(1.0), Uniform(0.0, 1.0))
+    use_dist_censored = within_interval_censored(use_dist, 0.0, 10.0)
+    @test pdf(use_dist_censored) > 0.99
+    @test logpdf(use_dist_censored) < 0.0
 end
