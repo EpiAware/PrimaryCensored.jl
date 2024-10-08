@@ -64,7 +64,6 @@ end
 Base.eltype(::Type{<:PrimaryCensoredDist{D}}) where {D} = promote_type(eltype(D), eltype(D))
 
 function Distributions.cdf(d::PrimaryCensoredDist, x::Real)
-    solver = QuadGKJL()
     if x <= minimum(d.censoring)
         return 0.0
     end
@@ -80,7 +79,7 @@ function Distributions.cdf(d::PrimaryCensoredDist, x::Real)
     end
 
     prob = IntegralProblem(f, domain, x)
-    result = solve(prob, solver)[1]
+    result = solve(prob, QuadGKJL())[1]
     return result
 end
 
