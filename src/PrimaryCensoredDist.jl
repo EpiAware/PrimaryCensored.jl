@@ -73,7 +73,7 @@ function Distributions.cdf(d::PrimaryCensoredDist, x::Real)
         return exp(logcdf(d.uncensored, u) + logpdf(d.censoring, x - u))
     end
 
-    domain = (max(x - maximum(d.censoring), 0.), max(x - minimum(d.censoring), 0.))
+    domain = (max(x - maximum(d.censoring), 0.0), max(x - minimum(d.censoring), 0.0))
 
     if domain[2] - domain[1] ≈ 0.0
         return 0.0
