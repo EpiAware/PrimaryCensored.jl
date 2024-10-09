@@ -39,9 +39,26 @@ end
 
 @testitem "Test cdf method" begin
     using Distributions
-    use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
-    @test cdf(use_dist, 1e8) ≈ 1.0
-    @test logcdf(use_dist, -Inf) ≈ -Inf
+    @testset "Constructor and end point" begin
+        use_dist = primarycensored(LogNormal(3.5, 1.5), Uniform(1, 2))
+        @test cdf(use_dist, 1e8) ≈ 1.0
+        @test logcdf(use_dist, -Inf) ≈ -Inf
+    end
+
+    @testset "Check CDF function against known Exp(1) with uniform censor on primary" begin
+        dist = Exponential(1.0)
+        use_dist = primarycensored(dist, Uniform(0, 1))
+        # Analytical solution for the pmf of observation in [0,1], [1,2], ...
+        expected_pmf_uncond = [exp(-1)
+                               [(1 - exp(-1)) * (exp(1) - 1) * exp(-s) for s in 1:9]]
+        # Analytical solution for the cdf
+        expected_cdf = [0.0; cumsum(expected_pmf_uncond)]
+        # Calculated cdf
+        calc_cdf = map(0:10) do t
+            cdf(use_dist, t)
+        end
+        @test expected_cdf ≈ calc_cdf
+    end
 end
 
 @testitem "Test ccdf" begin
