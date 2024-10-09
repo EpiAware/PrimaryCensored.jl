@@ -57,7 +57,7 @@ end
         calc_cdf = map(0:10) do t
             cdf(use_dist, t)
         end
-        @test expected_cdf≈calc_cdf
+        @test expected_cdf ≈ calc_cdf
     end
 end
 
