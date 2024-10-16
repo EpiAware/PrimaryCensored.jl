@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.40
+# v0.20.0
 
 using Markdown
 using InteractiveUtils
@@ -9,11 +9,8 @@ begin
     let
         docs_dir = dirname(dirname(@__DIR__))
         println(docs_dir)
-        pkg_dir = dirname(docs_dir)
-        println(pkg_dir)
         using Pkg: Pkg
         Pkg.activate(docs_dir)
-        Pkg.develop(; path = pkg_dir)
         Pkg.instantiate()
     end
 end
@@ -55,7 +52,9 @@ We use CairoMakie for plotting, Turing for probabilistic programming, and the _c
 
 # ╔═╡ 80ce4590-e51a-457c-8497-d16916688656
 
+
 # ╔═╡ 320f081c-b26e-495a-9887-56c4212d1ed7
+
 
 # ╔═╡ 960b18ef-ab1d-417f-853e-d05d2cddc78f
 # FIXME: PrimaryCensored.jl installation
@@ -148,6 +147,7 @@ md"Aggregate to unique combinations and count occurrences"
 
 # ╔═╡ cd9e4e56-301d-44b8-b013-9cf9196e7e90
 
+
 # ╔═╡ 181e3bbd-d95b-4c50-87a9-75f4851e85a1
 delay_counts = combine(
     groupby(delay_data, [:pwindow, :obs_time, :observed_delay, :observed_delay_upper]),
@@ -238,6 +238,7 @@ y = delay_counts.observed_delay .+ 1e-6  # Adding small constant to avoid log(0)
 end
 
 # ╔═╡ 49846128-379c-4c3b-9ec1-567ffa92e079
+
 
 # ╔═╡ 4cf596f1-0042-4990-8d0a-caa8ba1db0c7
 model = naive_model(y = y, n = delay_counts.n, N = nrow(delay_counts))
