@@ -8,7 +8,7 @@ getting_started_pages = Any[
     ],
     "Tutorials" => [
         "Overview" => "getting-started/tutorials/index.md",
-        "Fitting distributions with PrimaryCensored and Turing" => "getting-started/tutorials/fitting-dists-with-Turing.md",
+        "Fitting distributions with PrimaryCensored and Turing" => "getting-started/tutorials/fitting-dists-with-Turing.md"
     ]
 ]
 
