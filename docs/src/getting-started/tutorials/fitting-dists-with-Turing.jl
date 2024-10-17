@@ -7,7 +7,7 @@ using InteractiveUtils
 # ╔═╡ bb9c75db-6638-48fe-afcb-e78c4bcc057d
 begin
     let
-        docs_dir = dirname(dirname(@__DIR__))
+        docs_dir = (dirname ∘ dirname ∘ dirname)(@__DIR__)
         println(docs_dir)
         using Pkg: Pkg
         Pkg.activate(docs_dir)
@@ -319,7 +319,7 @@ We see that the model has converged and the diagnostics look good. We also see t
 # ╟─30511a27-984e-40b7-9b1e-34bc87cb8d56
 # ╟─bb9c75db-6638-48fe-afcb-e78c4bcc057d
 # ╠═3690c122-d630-4fd0-aaf2-aea9226df086
-# ╠═c5ec0d58-ce3d-4b0b-a261-dbd37b119f71
+# ╟─c5ec0d58-ce3d-4b0b-a261-dbd37b119f71
 # ╠═b4409687-7bee-4028-824d-03b209aee68d
 # ╟─30e99e77-aad1-43e8-9284-ab0bf8ae741f
 # ╠═28bcd612-19f6-4e25-b6df-cb43df4f2a73
