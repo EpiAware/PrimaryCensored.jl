@@ -58,7 +58,7 @@ We'll start by simulating some censored and truncated delay distribution data. W
 """
 
 # ╔═╡ b4409687-7bee-4028-824d-03b209aee68d
-Random.seed!(1234) # Set seed for reproducibility
+Random.seed!(123) # Set seed for reproducibility
 
 # ╔═╡ 30e99e77-aad1-43e8-9284-ab0bf8ae741f
 md"Define the parameters for the simulation"
