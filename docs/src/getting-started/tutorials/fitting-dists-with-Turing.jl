@@ -90,34 +90,25 @@ obs_times = rand(8:10, n)
 # ╔═╡ 2e04be98-625f-45f4-bf5e-a0074ea1ea01
 md"Let's generates all the $n$ samples by recreating the primary censored sampling function from `primarycensoreddist`, c.f. documentation [here](https://primarycensoreddist.epinowcast.org/reference/rprimarycensoreddist.html)."
 
-# ╔═╡ 987c9e27-b993-4aae-a25e-2a12ffe94ee7
+# ╔═╡ aedda79e-c3d6-462e-bb9b-5edefbf0d5fc
 """
-	function rpcens(dist; pwindow = 1, swindow = 1, D = Inf, max_tries = 1000)
+	function rpcens(dist, censoring; swindow = 1, D = Inf)
 
-Does a truncated censored sample from `dist` with a uniform primary time on `[0, pwindow]`.
+Generates samples from the (possibly truncated) censored distribution with delay distribution `dist` and primary censoring distribution `censoring`, and applies a secondary censoring window of width `swindow` on the observation.
+
+If `D<Inf` then the secondary time is also right-truncated at time `D`.
 """
-function rpcens(dist; pwindow = 1, swindow = 1, D = Inf, max_tries = 1000)
-    T = zero(eltype(dist))
-    invalid_sample = true
-    attempts = 1
-    while (invalid_sample && attempts <= max_tries)
-        X = rand(dist)
-        U = rand() * pwindow
-        T = X + U
-        attempts += 1
-        if X + U < D
-            invalid_sample = false
-        end
-    end
-
-    @assert !invalid_sample "censored value not found in $max_tries attempts"
+function rpcens(dist, censoring; swindow = 1, D = Inf)
+    cens_dist = primarycensored(dist, censoring) |>
+                d -> D < Inf ? truncated(d; upper = D) : d
+    T = rand(cens_dist)
 
     return (T ÷ swindow) * swindow
 end
 
 # ╔═╡ a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
 samples = map(pwindows, swindows, obs_times) do pw, sw, ot
-    rpcens(true_dist; pwindow = pw, swindow = sw, D = ot)
+    rpcens(true_dist, Uniform(0.0, pw); swindow = sw, D = ot)
 end
 
 # ╔═╡ 50757759-9ec3-42d0-a765-df212642885a
@@ -140,7 +131,7 @@ end |>
 
 # ╔═╡ 993f1f74-4a55-47a7-9e3e-c725cba13c0a
 md"""
-Compare the samples with and without secondary censoring to the true distribution. First let's calculate empirical CDF:
+Compare the samples with and without secondary censoring to the true distribution. First let's calculate the empirical CDF:
 """
 
 # ╔═╡ 5a6d605d-bff6-4b7d-97f0-ca35750411d3
@@ -331,7 +322,7 @@ We see that the model has converged and the diagnostics look good. We also see t
 # ╠═2d0ca6e6-0333-4aec-93d4-43eb9985dc14
 # ╠═6465e51b-8d71-4c85-ba40-e6d230aa53b1
 # ╟─2e04be98-625f-45f4-bf5e-a0074ea1ea01
-# ╠═987c9e27-b993-4aae-a25e-2a12ffe94ee7
+# ╠═aedda79e-c3d6-462e-bb9b-5edefbf0d5fc
 # ╠═a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
 # ╟─50757759-9ec3-42d0-a765-df212642885a
 # ╠═5aed77d3-5798-4538-b3eb-3f4ce43d0423
