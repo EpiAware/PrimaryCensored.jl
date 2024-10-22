@@ -1,3 +1,6 @@
+using Pkg: Pkg
+Pkg.instantiate()
+
 using Documenter
 using PrimaryCensored
 using Pluto: Configuration.CompilerOptions
