@@ -52,3 +52,4 @@ dev/
 
 # Helpers
 justfile
+docs/src/getting-started/tutorials/fitting-dists-with-Turing.md
