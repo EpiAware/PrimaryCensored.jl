@@ -31,7 +31,7 @@ makedocs(; sitename = "PrimaryCensored.jl",
 )
 
 deploydocs(
-    repo = "github.com/epiaware/PrimaryCensored.jl.git",
+    repo = "github.com/EpiAware/PrimaryCensored.jl.git",
     target = "build",
     push_preview = true
 )
