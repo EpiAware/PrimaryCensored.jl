@@ -37,3 +37,33 @@ end
     @test pdf(use_dist_censored) > 0.99
     @test logpdf(use_dist_censored) < 0.0
 end
+
+@testitem "within_interval PMF tests" begin
+    using Distributions
+    dist = Normal(0, 1)
+    lower = -1.0
+    upper = 1.0
+
+    # Calculate the expected value using the CDF
+    expected_value = cdf(dist, upper) - cdf(dist, lower)
+
+    # Test the within_interval_pmf function
+    @test within_interval_pmf(dist, lower, upper) ≈ expected_value
+
+    # Additional test cases
+    lower = 0.0
+    upper = 2.0
+    expected_value = cdf(dist, upper) - cdf(dist, lower)
+    @test within_interval_pmf(dist, lower, upper) ≈ expected_value
+
+    lower = -2.0
+    upper = 0.0
+    expected_value = cdf(dist, upper) - cdf(dist, lower)
+    @test within_interval_pmf(dist, lower, upper) ≈ expected_value
+
+    # Calculate expected logpmf
+    expected_logpmf = log(cdf(dist, upper) - cdf(dist, lower))
+
+    # Test within_interval_logpmf function
+    @test within_interval_logpmf(dist, lower, upper) ≈ expected_logpmf
+end

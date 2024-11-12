@@ -1,4 +1,31 @@
 @doc raw"
+Calculate the probability mass function (PMF) of a univariate distribution `dist` having a value in the interval `[lower, upper]`.
+"
+function within_interval_pmf(dist::UnivariateDistribution, lower::Real, upper::Real)
+    return cdf(dist, upper) - cdf(dist, lower)
+end
+
+@doc raw"
+Calculate the log probability mass function (log(PMF)) of a univariate distribution `dist` having a value in the interval `[lower, upper]`.
+"
+function within_interval_logpmf(dist::UnivariateDistribution, lower::Real, upper::Real)
+    return log(within_interval_pmf(dist, lower, upper))
+end
+
+@doc raw"
+Generate a random value from a univariate distribution `d` but only return the value within an
+interval of size `swindow`.
+"
+function within_interval_rand(rng::AbstractRNG, d::UnivariateDistribution, swindow::Real)
+    return (rand(rng, d) ÷ swindow) * swindow
+end
+
+function within_interval_rand(d::UnivariateDistribution, swindow::Real)
+    rng = Random.GLOBAL_RNG
+    return (rand(rng, d) ÷ swindow) * swindow
+end
+
+@doc raw"
 Implement a censoring function.
 
 Takes a UnivariateDistribution and returns a WithinIntervalCensored object but depends only on the cdf method.
