@@ -92,8 +92,8 @@ md"Let's generates all the $n$ samples by recreating the primary censored sampli
 
 # ╔═╡ a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
 samples = map(pwindows, swindows, obs_times) do pw, sw, ot
-	cens_dist = primarycensored(true_dist, Uniform(0.0, pw)) |>
-                d ->  ot < Inf ? truncated(d; upper =  ot) : d
+    cens_dist = primarycensored(true_dist, Uniform(0.0, pw)) |>
+                d -> ot < Inf ? truncated(d; upper = ot) : d
     within_interval_rand(cens_dist, sw)
 end
 
@@ -208,9 +208,9 @@ summarize(naive_fit)
 # ╔═╡ 2c0b4f97-5953-497d-bca9-d1aa46c5150b
 let
     f = pairplot(naive_fit)
-	CairoMakie.vlines!(f[1, 1], [meanlog], linewidth = 3, color = :red)
+    CairoMakie.vlines!(f[1, 1], [meanlog], linewidth = 3, color = :red)
     CairoMakie.vlines!(f[2, 2], [sdlog], linewidth = 3, color = :red)
-	CairoMakie.scatter!(f[2, 1], [meanlog], [sdlog], markersize = 10, color = :red)
+    CairoMakie.scatter!(f[2, 1], [meanlog], [sdlog], markersize = 10, color = :red)
     f
 end
 
@@ -244,7 +244,7 @@ We make a new `Turing` model that now uses `within_interval_logpmf` rather than 
     dist = LogNormal(mu, sigma)
 
     for i in eachindex(y)
-		censoreddist = truncated(primarycensored(dist, Uniform(0.0, pws[i])); upper=Ds[i])
+        censoreddist = truncated(primarycensored(dist, Uniform(0.0, pws[i])); upper = Ds[i])
         Turing.@addlogprob! n[i] * within_interval_logpmf(censoreddist, y[i], y_upper[i])
     end
 end
@@ -278,7 +278,7 @@ let
     f = pairplot(primarycensoreddist_fit)
     CairoMakie.vlines!(f[1, 1], [meanlog], linewidth = 3, color = :red)
     CairoMakie.vlines!(f[2, 2], [sdlog], linewidth = 3, color = :red)
-	CairoMakie.scatter!(f[2, 1], [meanlog], [sdlog], markersize = 10, color = :red)
+    CairoMakie.scatter!(f[2, 1], [meanlog], [sdlog], markersize = 10, color = :red)
     f
 end
 
