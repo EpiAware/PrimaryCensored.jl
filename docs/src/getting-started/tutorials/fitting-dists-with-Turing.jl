@@ -88,27 +88,13 @@ swindows = rand(1:2, n)
 obs_times = rand(8:10, n)
 
 # ╔═╡ 2e04be98-625f-45f4-bf5e-a0074ea1ea01
-md"Let's generates all the $n$ samples by recreating the primary censored sampling function from `primarycensoreddist`, c.f. documentation [here](https://primarycensoreddist.epinowcast.org/reference/rprimarycensoreddist.html)."
-
-# ╔═╡ aedda79e-c3d6-462e-bb9b-5edefbf0d5fc
-"""
-	function rpcens(dist, censoring; swindow = 1, D = Inf)
-
-Generates samples from the (possibly truncated) censored distribution with delay distribution `dist` and primary censoring distribution `censoring`, and applies a secondary censoring window of width `swindow` on the observation.
-
-If `D<Inf` then the secondary time is also right-truncated at time `D`.
-"""
-function rpcens(dist, censoring; swindow = 1, D = Inf)
-    cens_dist = primarycensored(dist, censoring) |>
-                d -> D < Inf ? truncated(d; upper = D) : d
-    T = rand(cens_dist)
-
-    return (T ÷ swindow) * swindow
-end
+md"Let's generates all the $n$ samples by recreating the primary censored sampling function from `primarycensoreddist`, c.f. documentation [here](https://primarycensoreddist.epinowcast.org/reference/rprimarycensoreddist.html). In our usage with use the `within_interval_rand` function which censors the `rand` return of a distribution onto a secondary censoring interval of specified width."
 
 # ╔═╡ a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
 samples = map(pwindows, swindows, obs_times) do pw, sw, ot
-    rpcens(true_dist, Uniform(0.0, pw); swindow = sw, D = ot)
+	cens_dist = primarycensored(true_dist, Uniform(0.0, pw)) |>
+                d ->  ot < Inf ? truncated(d; upper =  ot) : d
+    within_interval_rand(cens_dist, sw)
 end
 
 # ╔═╡ 50757759-9ec3-42d0-a765-df212642885a
@@ -222,8 +208,9 @@ summarize(naive_fit)
 # ╔═╡ 2c0b4f97-5953-497d-bca9-d1aa46c5150b
 let
     f = pairplot(naive_fit)
-    vlines!(f[1, 1], [meanlog], linewidth = 4)
-    vlines!(f[2, 2], [sdlog], linewidth = 4)
+	CairoMakie.vlines!(f[1, 1], [meanlog], linewidth = 3, color = :red)
+    CairoMakie.vlines!(f[2, 2], [sdlog], linewidth = 3, color = :red)
+	CairoMakie.scatter!(f[2, 1], [meanlog], [sdlog], markersize = 10, color = :red)
     f
 end
 
@@ -238,23 +225,16 @@ md"
 
 We'll now fit an improved model by defining our observations as _censored_ using `PrimaryCensored.primarycensored` to construct censored delay distributions from actual delay distributions (which we sample below as `dist`) and uniform primary censored windows (which vary across the data).
 
-Using this approach we can write a log-pmf function `primary_censored_dist_lpmf` that accounts for:
+In this approach we use the `within_interval_logpmf` supplied by `PrimaryCensored.jl`. This function calculates the log-probability of the secondary event occurring in the secondary censoring window conditional on the primary event occurring in the primary censoring window by calculating the increase in the CDF over the secondary window and rescaling by the probability of the secondary event occuring within the maximum observation time `D`. This accounts for:
 - The primary and secondary censoring windows, which can vary in length.
 - The effect of right truncation in biasing our observations.
 
-This is the analogous function to the function of the same name in [`primarycensored`](https://primarycensored.epinowcast.org/stan/primarycensored_8stan.html#a40c8992ec6549888fdd011beddf024b0): it calculates the log-probability of the secondary event occurring in the secondary censoring window conditional on the primary event occurring in the primary censoring window by calculating the increase in the CDF over the secondary window and rescaling by the probability of the secondary event occuring within the maximum observation time `D`.
+This is the analogous function to `primary_censored_dist_lpmf` in [`primarycensored`](https://primarycensored.epinowcast.org/stan/primarycensored_8stan.html#a40c8992ec6549888fdd011beddf024b0).
 "
-
-# ╔═╡ f26f6b6b-27f5-4372-b214-d1515c8c0ddc
-function primarycensored_lpmf(dist, y, pwindow, y_upper, D)
-    censoreddist = primarycensored(dist, Uniform(0.0, pwindow))
-    return log(cdf(censoreddist, y_upper) - cdf(censoreddist, y)) -
-           log(cdf(censoreddist, D))
-end
 
 # ╔═╡ e24c231a-0bf3-4a03-a307-2ab43cdbecf4
 md"
-We make a new `Turing` model that now uses `primary_censored_dist_lpmf` rather than the naive uncensored and untruncated `logpdf`.
+We make a new `Turing` model that now uses `within_interval_logpmf` rather than the naive uncensored and untruncated `logpdf`.
 "
 
 # ╔═╡ 21ffd833-428f-488d-8df3-e8468aa76bb6
@@ -264,8 +244,8 @@ We make a new `Turing` model that now uses `primary_censored_dist_lpmf` rather t
     dist = LogNormal(mu, sigma)
 
     for i in eachindex(y)
-        Turing.@addlogprob! n[i] * primarycensored_lpmf(
-            dist, y[i], pws[i], y_upper[i], Ds[i])
+		censoreddist = truncated(primarycensored(dist, Uniform(0.0, pws[i])); upper=Ds[i])
+        Turing.@addlogprob! n[i] * within_interval_logpmf(censoreddist, y[i], y_upper[i])
     end
 end
 
@@ -296,8 +276,9 @@ summarize(primarycensoreddist_fit)
 # ╔═╡ f0c02e4a-c0cc-41de-b1bf-f5fad7e7dfdb
 let
     f = pairplot(primarycensoreddist_fit)
-    CairoMakie.vlines!(f[1, 1], [meanlog], linewidth = 3)
-    CairoMakie.vlines!(f[2, 2], [sdlog], linewidth = 3)
+    CairoMakie.vlines!(f[1, 1], [meanlog], linewidth = 3, color = :red)
+    CairoMakie.vlines!(f[2, 2], [sdlog], linewidth = 3, color = :red)
+	CairoMakie.scatter!(f[2, 1], [meanlog], [sdlog], markersize = 10, color = :red)
     f
 end
 
@@ -322,7 +303,6 @@ We see that the model has converged and the diagnostics look good. We also see t
 # ╠═2d0ca6e6-0333-4aec-93d4-43eb9985dc14
 # ╠═6465e51b-8d71-4c85-ba40-e6d230aa53b1
 # ╟─2e04be98-625f-45f4-bf5e-a0074ea1ea01
-# ╠═aedda79e-c3d6-462e-bb9b-5edefbf0d5fc
 # ╠═a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
 # ╟─50757759-9ec3-42d0-a765-df212642885a
 # ╠═5aed77d3-5798-4538-b3eb-3f4ce43d0423
@@ -343,7 +323,6 @@ We see that the model has converged and the diagnostics look good. We also see t
 # ╠═2c0b4f97-5953-497d-bca9-d1aa46c5150b
 # ╟─7122bd53-81f6-4ea5-a024-86fdd7a7207a
 # ╟─080c1bca-afcd-46c0-80b8-1708e8d05ae6
-# ╠═f26f6b6b-27f5-4372-b214-d1515c8c0ddc
 # ╟─e24c231a-0bf3-4a03-a307-2ab43cdbecf4
 # ╠═21ffd833-428f-488d-8df3-e8468aa76bb6
 # ╟─dfaab7c1-84be-421d-9eb3-60235a2b2a17
