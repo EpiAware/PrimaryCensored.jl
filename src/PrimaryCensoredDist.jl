@@ -1,5 +1,5 @@
 @doc raw"
-    Constructs a `PrimaryCensoredDist` distribution with the specified uncensored and censoring distributions.
+    Constructs a `primarycensored` distribution with the specified uncensored and censoring distributions.
 
     # Arguments
     - `uncensored::D`: The uncensored distribution.
@@ -25,7 +25,7 @@
 "
 function primarycensored(
         uncensored::UnivariateDistribution, censoring::UnivariateDistribution)
-    return PrimaryCensoredDist(uncensored, censoring)
+    return primarycensored(uncensored, censoring)
 end
 
 @doc raw"
@@ -33,7 +33,7 @@ Generic wrapper for a primary event censored distribution.
 
 # Contructors
 
-- `PrimaryCensoredDist(; uncensored::D, censoring::D)`: Constructs a `PrimaryCensoredDist` distribution with the specified uncensored and censoring distributions.
+- `primarycensored(; uncensored::D, censoring::D)`: Constructs a `primarycensored` distribution with the specified uncensored and censoring distributions.
 # Examples
 
 ```@example
@@ -47,7 +47,7 @@ d = primarycensored(uncensored, censoring)
 rand(d)
 ```
 "
-struct PrimaryCensoredDist{D1 <: UnivariateDistribution, D2 <: UnivariateDistribution} <:
+struct primarycensored{D1 <: UnivariateDistribution, D2 <: UnivariateDistribution} <:
        Distributions.UnivariateDistribution{Distributions.ValueSupport}
     "The original (uncensored) distribution."
     uncensored::D1
@@ -55,15 +55,15 @@ struct PrimaryCensoredDist{D1 <: UnivariateDistribution, D2 <: UnivariateDistrib
     censoring::D2
 end
 
-function Distributions.params(d::PrimaryCensoredDist)
+function Distributions.params(d::primarycensored)
     d0params = params(d.uncensored)
     d1params = params(d.censoring)
     return (d0params..., d1params...)
 end
 
-Base.eltype(::Type{<:PrimaryCensoredDist{D}}) where {D} = promote_type(eltype(D), eltype(D))
+Base.eltype(::Type{<:primarycensored{D}}) where {D} = promote_type(eltype(D), eltype(D))
 
-function Distributions.cdf(d::PrimaryCensoredDist, x::Real)
+function Distributions.cdf(d::primarycensored, x::Real)
     if x <= minimum(d.censoring)
         return 0.0
     end
@@ -83,7 +83,7 @@ function Distributions.cdf(d::PrimaryCensoredDist, x::Real)
     return result
 end
 
-function Distributions.logcdf(d::PrimaryCensoredDist, x::Real)
+function Distributions.logcdf(d::primarycensored, x::Real)
     if x == -Inf
         return -Inf
     end
@@ -91,24 +91,24 @@ function Distributions.logcdf(d::PrimaryCensoredDist, x::Real)
     return result
 end
 
-function Distributions.ccdf(d::PrimaryCensoredDist, x::Real)
+function Distributions.ccdf(d::primarycensored, x::Real)
     result = 1 - cdf(d, x)
     return result
 end
 
-function Distributions.logccdf(d::PrimaryCensoredDist, x::Real)
+function Distributions.logccdf(d::primarycensored, x::Real)
     result = log(ccdf(d, x))
     return result
 end
 
 #### Sampling
 
-function Base.rand(rng::AbstractRNG, d::PrimaryCensoredDist)
+function Base.rand(rng::AbstractRNG, d::primarycensored)
     rand(rng, d.uncensored) + rand(rng, d.censoring)
 end
 
 function Base.rand(
-        rng::Random.AbstractRNG, d::Truncated{<:PrimaryCensored.PrimaryCensoredDist})
+        rng::Random.AbstractRNG, d::Truncated{<:PrimaryCensored.primarycensored})
     d0 = d.untruncated
     lower = d.lower
     upper = d.upper

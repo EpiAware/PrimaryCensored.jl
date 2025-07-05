@@ -88,7 +88,7 @@ swindows = rand(1:2, n)
 obs_times = rand(8:10, n)
 
 # ╔═╡ 2e04be98-625f-45f4-bf5e-a0074ea1ea01
-md"Let's generates all the $n$ samples by recreating the primary censored sampling function from `primarycensoreddist`, c.f. documentation [here](https://primarycensoreddist.epinowcast.org/reference/rprimarycensoreddist.html)."
+md"Let's generates all the $n$ samples by recreating the primary censored sampling function from `primarycensored`, c.f. documentation [here](https://primarycensored.epinowcast.org/reference/rprimarycensored.html)."
 
 # ╔═╡ aedda79e-c3d6-462e-bb9b-5edefbf0d5fc
 """
@@ -258,7 +258,7 @@ We make a new `Turing` model that now uses `primary_censored_dist_lpmf` rather t
 "
 
 # ╔═╡ 21ffd833-428f-488d-8df3-e8468aa76bb6
-@model function primarycensoreddist_model(y, y_upper, n, pws, Ds)
+@model function primarycensored_model(y, y_upper, n, pws, Ds)
     mu ~ Normal(1.0, 1.0)
     sigma ~ truncated(Normal(0.5, 0.5); lower = 0.0)
     dist = LogNormal(mu, sigma)
@@ -275,7 +275,7 @@ Lets instantiate this model with data
 "
 
 # ╔═╡ a59e371a-b671-4648-984d-7bcaac367d32
-primarycensoreddist_mdl = primarycensoreddist_model(
+primarycensored_mdl = primarycensored_model(
     delay_counts.observed_delay,
     delay_counts.observed_delay_upper,
     delay_counts.n,
@@ -287,15 +287,15 @@ primarycensoreddist_mdl = primarycensoreddist_model(
 md"Now let’s fit the compiled model."
 
 # ╔═╡ b5cd8b13-e3db-4ed1-80ce-e3ac1c57932c
-primarycensoreddist_fit = sample(
-    primarycensoreddist_mdl, NUTS(), MCMCThreads(), 1000, 4)
+primarycensored_fit = sample(
+    primarycensored_mdl, NUTS(), MCMCThreads(), 1000, 4)
 
 # ╔═╡ a53a78b3-dcbe-4b62-a336-a26e647dc8c8
-summarize(primarycensoreddist_fit)
+summarize(primarycensored_fit)
 
 # ╔═╡ f0c02e4a-c0cc-41de-b1bf-f5fad7e7dfdb
 let
-    f = pairplot(primarycensoreddist_fit)
+    f = pairplot(primarycensored_fit)
     CairoMakie.vlines!(f[1, 1], [meanlog], linewidth = 3)
     CairoMakie.vlines!(f[2, 2], [sdlog], linewidth = 3)
     f
