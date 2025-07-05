@@ -1,10 +1,4 @@
-using Random
-using Test
-using TestItems
-using Distributions
-using PrimaryCensored
 
-# Bad inputs
 @testitem "Test struct type" begin
     using Distributions
     @test_throws MethodError primarycensored(Normal(1, 2), 7)
