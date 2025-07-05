@@ -16,7 +16,7 @@ jobs:
         run: |
             if [ -d "previews/PR$PRNUM" ]; then
               git config user.name "PrimaryCensored.jl"
-              git config user.email "primarycensored@primarycensored.epiaware.org"
+              git config user.email "primarycensored@primarycensored.epinowcast.org"
               git rm -rf "previews/PR$PRNUM"
               git commit -m "delete preview"
               git branch gh-pages-new $(echo "delete history" | git commit-tree HEAD^{tree})

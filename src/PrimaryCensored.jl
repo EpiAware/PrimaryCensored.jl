@@ -14,7 +14,7 @@ export censored_cdf, censored_pmf
 
 include("docstrings.jl")
 
-include("primarycensored.jl")
+include("PrimaryCensoredDist.jl")
 include("censored_pmf.jl")
 include("WithinIntervalCensored.jl")
 

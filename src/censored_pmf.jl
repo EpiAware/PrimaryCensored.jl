@@ -1,7 +1,7 @@
 """
 Internal function to check censored_pmf arguments and return the time steps of the rightmost limits of the censor intervals.
 """
-function _check_and_give_ts(dist::primarycensored, Δd, D, upper)
+function _check_and_give_ts(dist::PrimaryCensoredDist, Δd, D, upper)
     @assert minimum(dist.uncensored)>=0.0 "Delay distribution must be non-negative."
     @assert Δd>0.0 "Δd must be positive."
 
@@ -20,7 +20,7 @@ function _check_and_give_ts(dist::primarycensored, Δd, D, upper)
 end
 
 @doc raw"
-Create a discrete probability cumulative distribution function (CDF) from a given `primarycensored`,
+Create a discrete probability cumulative distribution function (CDF) from a given `PrimaryCensoredDist`,
 specialized for the case where all observsations are censored into disjoint intervals of width `Δd`. A
 canonical example of this would be daily or weekly reporting.
 
@@ -29,7 +29,7 @@ secondary event occuring either before or after some time. Truncation can be app
 
 
 # Arguments
-- `dist`: The `primarycensored` distribution from which to evaluate the CDF.
+- `dist`: The `PrimaryCensoredDist` distribution from which to evaluate the CDF.
 - `Δd`: The step size for discretizing the domain. Default is 1.0.
 - `D`: The upper bound of the domain. Must be greater than `Δd`. Default `D = nothing`
 indicates that the coverage of the distribution returned at its `upper`th percentile, _if the delay started at the
@@ -70,14 +70,14 @@ censored_cdf(dist; D = 10) |>
  1.0
 ```
 "
-function censored_cdf(dist::primarycensored; Δd = 1.0, D = nothing, upper = 0.99)
+function censored_cdf(dist::PrimaryCensoredDist; Δd = 1.0, D = nothing, upper = 0.99)
     ts = _check_and_give_ts(dist, Δd, D, upper)
     cens_F = ts .|> t -> cdf(dist, t)
     return [0.0; cens_F]
 end
 
 @doc raw"
-Create a discrete probability probability mass function (PMF) from a given `primarycensored`,
+Create a discrete probability probability mass function (PMF) from a given `PrimaryCensoredDist`,
 specialized for the case where all observsations are censored into disjoint intervals of width `Δd`. A
 canonical example of this would be daily or weekly reporting.
 
@@ -86,7 +86,7 @@ secondary event occuring either before or after some time. Truncation can be app
 
 
 # Arguments
-- `dist`: The `primarycensored` distribution from which to evaluate the CDF.
+- `dist`: The `PrimaryCensoredDist` distribution from which to evaluate the CDF.
 - `Δd`: The step size for discretizing the domain. Default is 1.0.
 - `D`: The upper bound of the domain. Must be greater than `Δd`. Default `D = nothing`
 indicates that the coverage of the distribution returned at its `upper`th percentile, _if the delay started at the
@@ -126,7 +126,7 @@ censored_pmf(dist; D = 10) |>
  0.0
 ```
 "
-function censored_pmf(dist::primarycensored; Δd = 1.0, D = nothing, upper = 0.99)
+function censored_pmf(dist::PrimaryCensoredDist; Δd = 1.0, D = nothing, upper = 0.99)
     cens_cdf = censored_cdf(dist; Δd, D, upper)
     return cens_cdf |> diff
 end
