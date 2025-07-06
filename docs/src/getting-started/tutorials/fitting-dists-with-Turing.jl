@@ -236,25 +236,20 @@ We see that the model has converged and the diagnostics look good. However, just
 md"
 ## Fitting an improved model using censoring utilities
 
-We'll now fit an improved model by defining our observations as _censored_ using `PrimaryCensored.primarycensored` to construct censored delay distributions from actual delay distributions (which we sample below as `dist`) and uniform primary censored windows (which vary across the data).
+We'll now fit an improved model using the package's built-in distribution types. We'll use:
+- `primarycensored` to construct primary event censored distributions
+- `truncated` to handle right truncation when observation time is finite
+- `within_interval_censored` to handle the secondary interval censoring
 
-Using this approach we can write a log-pmf function `primary_censored_dist_lpmf` that accounts for:
+This approach directly uses the package's distribution interface, which automatically handles:
 - The primary and secondary censoring windows, which can vary in length.
 - The effect of right truncation in biasing our observations.
-
-This is the analogous function to the function of the same name in [`primarycensored`](https://primarycensored.epinowcast.org/stan/primarycensored_8stan.html#a40c8992ec6549888fdd011beddf024b0): it calculates the log-probability of the secondary event occurring in the secondary censoring window conditional on the primary event occurring in the primary censoring window by calculating the increase in the CDF over the secondary window and rescaling by the probability of the secondary event occuring within the maximum observation time `D`.
+- Proper normalization and log-probability calculations.
 "
-
-# ╔═╡ f26f6b6b-27f5-4372-b214-d1515c8c0ddc
-function primarycensored_lpmf(dist, y, pwindow, y_upper, D)
-    censoreddist = primarycensored(dist, Uniform(0.0, pwindow))
-    return log(cdf(censoreddist, y_upper) - cdf(censoreddist, y)) -
-           log(cdf(censoreddist, D))
-end
 
 # ╔═╡ e24c231a-0bf3-4a03-a307-2ab43cdbecf4
 md"
-We make a new `Turing` model that now uses `primary_censored_dist_lpmf` rather than the naive uncensored and untruncated `logpdf`.
+We make a new `Turing` model that uses the package's distribution types directly.
 "
 
 # ╔═╡ 21ffd833-428f-488d-8df3-e8468aa76bb6
@@ -264,8 +259,19 @@ We make a new `Turing` model that now uses `primary_censored_dist_lpmf` rather t
     dist = LogNormal(mu, sigma)
 
     for i in eachindex(y)
-        Turing.@addlogprob! n[i] * primarycensored_lpmf(
-            dist, y[i], pws[i], y_upper[i], Ds[i])
+        # Create primary censored distribution
+        pcens_dist = primarycensored(dist, Uniform(0.0, pws[i]))
+        
+        # Apply truncation if needed
+        if Ds[i] < Inf
+            pcens_dist = truncated(pcens_dist; upper = Ds[i])
+        end
+        
+        # Apply interval censoring for the observed delay interval
+        interval_dist = within_interval_censored(pcens_dist, y[i], y_upper[i])
+        
+        # Add log probability
+        Turing.@addlogprob! n[i] * logpdf(interval_dist)
     end
 end
 
@@ -343,7 +349,6 @@ We see that the model has converged and the diagnostics look good. We also see t
 # ╠═2c0b4f97-5953-497d-bca9-d1aa46c5150b
 # ╟─7122bd53-81f6-4ea5-a024-86fdd7a7207a
 # ╟─080c1bca-afcd-46c0-80b8-1708e8d05ae6
-# ╠═f26f6b6b-27f5-4372-b214-d1515c8c0ddc
 # ╟─e24c231a-0bf3-4a03-a307-2ab43cdbecf4
 # ╠═21ffd833-428f-488d-8df3-e8468aa76bb6
 # ╟─dfaab7c1-84be-421d-9eb3-60235a2b2a17
