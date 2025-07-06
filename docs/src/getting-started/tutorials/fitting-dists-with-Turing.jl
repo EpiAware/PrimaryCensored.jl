@@ -88,7 +88,7 @@ swindows = rand(1:2, n)
 obs_times = rand(8:10, n)
 
 # ╔═╡ 2e04be98-625f-45f4-bf5e-a0074ea1ea01
-md"Let's generates all the $n$ samples by recreating the primary censored sampling function from `primarycensoreddist`, c.f. documentation [here](https://primarycensoreddist.epinowcast.org/reference/rprimarycensoreddist.html)."
+md"Let's generates all the $n$ samples by recreating the primary censored sampling function from `primarycensoreddist`, c.f. documentation [here](https://primarycensored.epinowcast.org/reference/rprimarycensoreddist.html)."
 
 # ╔═╡ aedda79e-c3d6-462e-bb9b-5edefbf0d5fc
 """

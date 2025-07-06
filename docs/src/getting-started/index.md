@@ -21,7 +21,7 @@ using Plots
 Random.seed!(123)
 
 ```
-Now we can set up the problem as described [here](https://primarycensoreddist.epinowcast.org/dev/articles/primarycensoreddist.html).
+Now we can set up the problem as described [here](https://primarycensored.epinowcast.org/dev/articles/primarycensored.html).
 
 ```
 n = 1e4
@@ -36,11 +36,11 @@ primary_distribution = Uniform(1, 2)
 delay_distribution = LogNormal(meanlog, sdlog)
 
 ```
-Now we can generate our `primarycensoreddist` object
+Now we can generate our `PrimaryCensoredDist` object
 
 ```
 
-prim_dist = primarycensoreddist(primary_distribution, delay_distribution)
+prim_dist = primarycensored(primary_distribution, delay_distribution)
 
 ```
 
@@ -61,13 +61,11 @@ hist(rand(int_censored_dist, 1000))
 
 ```
 
-
-
 ## Contributing
 
 We welcome contributions and new contributors!
-We particularly appreciate help on [identifying and identified issues](https://github.com/epinowcast/PrimaryCensored.jl/issues).
-Please check and add to the issues, and/or add a [pull request](https://github.com/epinowcast/PrimaryCensored.jl/pulls) and see our [contributing guide](https://github.com/epinowcast/.github/blob/main/CONTRIBUTING.md) for more information.
+We particularly appreciate help on [identifying and identified issues](https://github.com/epiaware/PrimaryCensored.jl/issues).
+Please check and add to the issues, and/or add a [pull request](https://github.com/epiaware/PrimaryCensored.jl/pulls) and see our [contributing guide](https://github.com/epiaware/.github/blob/main/CONTRIBUTING.md) for more information.
 
 If you need a different underlying model for your work: `primarycensoreddist` provides a flexible framework for censored distributions in Julia, the language of the future.
 The future the is now.
@@ -75,4 +73,4 @@ The future the is now.
 
 ## Code of Conduct
 
-Please note that the `primarycensoreddist` project is released with a [Contributor Code of Conduct](https://github.com/epinowcast/.github/blob/main/CODE_OF_CONDUCT.md). By contributing to this project, you agree to abide by its terms.
+Please note that the `primarycensoreddist` project is released with a [Contributor Code of Conduct](https://github.com/epiaware/.github/blob/main/CODE_OF_CONDUCT.md). By contributing to this project, you agree to abide by its terms.
