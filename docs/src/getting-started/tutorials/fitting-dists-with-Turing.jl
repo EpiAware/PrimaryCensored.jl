@@ -102,13 +102,9 @@ Note: This function generates samples. When fitting models, we'll use `within_in
 to calculate the probability of observing data within specific intervals.
 """
 function rpcens(dist, censoring; swindow = 1, D = Inf)
-    # Create primary censored distribution
-    cens_dist = primarycensored(dist, censoring)
-    
-    # Apply truncation if needed
-    if D < Inf
-        cens_dist = truncated(cens_dist; upper = D)
-    end
+    # Create primary censored distribution and apply truncation
+    cens_dist = primarycensored(dist, censoring) |>
+                d -> truncated(d; upper = D)
     
     # Sample from the distribution
     T = rand(cens_dist)
@@ -269,16 +265,10 @@ We make a new `Turing` model that uses the package's distribution types directly
     dist = LogNormal(mu, sigma)
 
     for i in eachindex(y)
-        # Create primary censored distribution
-        pcens_dist = primarycensored(dist, Uniform(0.0, pws[i]))
-        
-        # Apply truncation if needed
-        if Ds[i] < Inf
-            pcens_dist = truncated(pcens_dist; upper = Ds[i])
-        end
-        
-        # Apply interval censoring for the observed delay interval
-        interval_dist = within_interval_censored(pcens_dist, y[i], y_upper[i])
+        # Create primary censored distribution with truncation and interval censoring
+        interval_dist = primarycensored(dist, Uniform(0.0, pws[i])) |>
+                        d -> truncated(d; upper = Ds[i]) |>
+                        d -> within_interval_censored(d, y[i], y_upper[i])
         
         # Add log probability
         Turing.@addlogprob! n[i] * logpdf(interval_dist)
