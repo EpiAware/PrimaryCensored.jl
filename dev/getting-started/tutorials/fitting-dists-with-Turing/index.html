@@ -25,7 +25,7 @@
 <!--
     # This information is used for caching.
     [PlutoStaticHTML.State]
-    input_sha = "29723c883c9df046c0a6b12b94b17401fdeb5b092979907ffef07c21fe091fb1"
+    input_sha = "aba94373ac96e3c64bce9f2d08a83c8cb4015613918e54903d3b30041214bb25"
     julia_version = "1.11.5"
 -->
 
@@ -129,24 +129,12 @@ end</code></pre>
 Generates samples from the (possibly truncated) censored distribution with delay distribution `dist` and primary censoring distribution `censoring`, and applies a secondary censoring window of width `swindow` on the observation.
 
 If `D&lt;Inf` then the secondary time is also right-truncated at time `D`.
-
-Note: This function generates samples. When fitting models, we'll use `within_interval_censored` 
-to calculate the probability of observing data within specific intervals.
 """
 function rpcens(dist, censoring; swindow = 1, D = Inf)
-    # Create primary censored distribution
-    cens_dist = primarycensored(dist, censoring)
-    
-    # Apply truncation if needed
-    if D &lt; Inf
-        cens_dist = truncated(cens_dist; upper = D)
-    end
-    
-    # Sample from the distribution
-    T = rand(cens_dist)
-    
-    # Apply secondary censoring window by rounding down to nearest multiple
-    return (T ÷ swindow) * swindow
+    cens_dist = primarycensored(dist, censoring) |&gt;
+                d -&gt; truncated(d; upper = D) |&gt;
+                d -&gt; discretise(d, swindow)
+    return rand(cens_dist)
 end</code></pre>
 
 
@@ -249,7 +237,7 @@ end</code></pre>
 
 <div class="markdown"><h2 id="Fitting-a-naive-model-using-Turing">Fitting a naive model using Turing</h2><p>We'll start by fitting a naive model using NUTS from <code>Turing</code>. We define the model in the <code>Turing</code> PPL.</p></div>
 
-<pre class='language-julia'><code class='language-julia'>@model function naive_model(y, n)
+<pre class='language-julia'><code class='language-julia'>@model function naive_model(N, y, n)
     mu ~ Normal(1.0, 1.0)
     sigma ~ truncated(Normal(0.5, 1.0); lower = 0.0)
     d = LogNormal(mu, sigma)
@@ -264,9 +252,10 @@ end</code></pre>
 <div class="markdown"><p>Now lets instantiate this model with data</p></div>
 
 <pre class='language-julia'><code class='language-julia'>naive_mdl = naive_model(
+    size(delay_counts, 1),
     delay_counts.observed_delay .+ 1e-6, # Add a small constant to avoid log(0)
     delay_counts.n)</code></pre>
-<pre class="code-output documenter-example-output" id="var-naive_mdl">DynamicPPL.Model{typeof(naive_model), (:y, :n), (), (), Tuple{Vector{Float64}, Vector{Int64}}, Tuple{}, DynamicPPL.DefaultContext}(naive_model, (y = [1.0e-6, 1.000001, 2.000001, 3.000001, 4.000001, 5.000001, 6.000001, 7.000001, 1.0e-6, 1.000001  …  1.0e-6, 2.000001, 4.000001, 6.000001, 8.000001, 1.0e-6, 2.000001, 4.000001, 6.000001, 8.000001], n = [1, 13, 32, 29, 34, 26, 19, 14, 2, 5  …  13, 69, 59, 30, 12, 9, 69, 48, 29, 22]), NamedTuple(), DynamicPPL.DefaultContext())</pre>
+<pre class="code-output documenter-example-output" id="var-naive_mdl">DynamicPPL.Model{typeof(naive_model), (:N, :y, :n), (), (), Tuple{Int64, Vector{Float64}, Vector{Int64}}, Tuple{}, DynamicPPL.DefaultContext}(naive_model, (N = 80, y = [1.0e-6, 1.000001, 2.000001, 3.000001, 4.000001, 5.000001, 6.000001, 7.000001, 1.0e-6, 1.000001  …  1.0e-6, 2.000001, 4.000001, 6.000001, 8.000001, 1.0e-6, 2.000001, 4.000001, 6.000001, 8.000001], n = [1, 13, 32, 29, 34, 26, 19, 14, 2, 5  …  13, 69, 59, 30, 12, 9, 69, 48, 29, 22]), NamedTuple(), DynamicPPL.DefaultContext())</pre>
 
 
 <div class="markdown"><p>and now let's fit the compiled model.</p></div>
@@ -275,7 +264,7 @@ end</code></pre>
 <table><tbody><tr><th></th><th>iteration</th><th>chain</th><th>mu</th><th>sigma</th><th>lp</th><th>n_steps</th><th>is_accept</th><th>acceptance_rate</th><th>...</th></tr><tr><td>1</td><td>251</td><td>1</td><td>0.553068</td><td>3.15822</td><td>-6326.55</td><td>3.0</td><td>1.0</td><td>0.988915</td><td></td></tr><tr><td>2</td><td>252</td><td>1</td><td>0.510838</td><td>3.17801</td><td>-6326.94</td><td>3.0</td><td>1.0</td><td>0.774961</td><td></td></tr><tr><td>3</td><td>253</td><td>1</td><td>0.617821</td><td>3.23129</td><td>-6327.04</td><td>3.0</td><td>1.0</td><td>0.842287</td><td></td></tr><tr><td>4</td><td>254</td><td>1</td><td>0.524837</td><td>3.15647</td><td>-6326.84</td><td>3.0</td><td>1.0</td><td>0.810568</td><td></td></tr><tr><td>5</td><td>255</td><td>1</td><td>0.580968</td><td>3.17933</td><td>-6326.38</td><td>3.0</td><td>1.0</td><td>0.918482</td><td></td></tr><tr><td>6</td><td>256</td><td>1</td><td>0.663479</td><td>3.16637</td><td>-6326.98</td><td>3.0</td><td>1.0</td><td>0.895888</td><td></td></tr><tr><td>7</td><td>257</td><td>1</td><td>0.439524</td><td>3.15768</td><td>-6328.62</td><td>3.0</td><td>1.0</td><td>0.590854</td><td></td></tr><tr><td>8</td><td>258</td><td>1</td><td>0.534594</td><td>3.1458</td><td>-6326.84</td><td>3.0</td><td>1.0</td><td>1.0</td><td></td></tr><tr><td>9</td><td>259</td><td>1</td><td>0.637607</td><td>3.19938</td><td>-6326.73</td><td>3.0</td><td>1.0</td><td>1.0</td><td></td></tr><tr><td>10</td><td>260</td><td>1</td><td>0.540793</td><td>3.19358</td><td>-6326.63</td><td>3.0</td><td>1.0</td><td>0.976499</td><td></td></tr><tr><td>...</td></tr></tbody></table>
 
 <pre class='language-julia'><code class='language-julia'>summarize(naive_fit)</code></pre>
-<table><tbody><tr><th></th><th>parameters</th><th>mean</th><th>std</th><th>mcse</th><th>ess_bulk</th><th>ess_tail</th><th>rhat</th><th>ess_per_sec</th></tr><tr><td>1</td><td>:mu</td><td>0.586577</td><td>0.0724407</td><td>0.00175329</td><td>1698.91</td><td>1403.85</td><td>1.00011</td><td>243.048</td></tr><tr><td>2</td><td>:sigma</td><td>3.17917</td><td>0.0510141</td><td>0.00123574</td><td>1687.42</td><td>1363.78</td><td>1.00162</td><td>241.406</td></tr></tbody></table>
+<table><tbody><tr><th></th><th>parameters</th><th>mean</th><th>std</th><th>mcse</th><th>ess_bulk</th><th>ess_tail</th><th>rhat</th><th>ess_per_sec</th></tr><tr><td>1</td><td>:mu</td><td>0.586577</td><td>0.0724407</td><td>0.00175329</td><td>1698.91</td><td>1403.85</td><td>1.00011</td><td>248.997</td></tr><tr><td>2</td><td>:sigma</td><td>3.17917</td><td>0.0510141</td><td>0.00123574</td><td>1687.42</td><td>1363.78</td><td>1.00162</td><td>247.314</td></tr></tbody></table>
 
 <pre class='language-julia'><code class='language-julia'>let
     f = pairplot(naive_fit)
@@ -304,9 +293,7 @@ end</code></pre>
         pcens_dist = primarycensored(dist, Uniform(0.0, pws[i]))
         
         # Apply truncation if needed
-        if Ds[i] &lt; Inf
-            pcens_dist = truncated(pcens_dist; upper = Ds[i])
-        end
+        pcens_dist = truncated(pcens_dist; upper = Ds[i])
         
         # Apply interval censoring for the observed delay interval
         interval_dist = within_interval_censored(pcens_dist, y[i], y_upper[i])
@@ -337,7 +324,7 @@ end</code></pre>
 <table><tbody><tr><th></th><th>iteration</th><th>chain</th><th>mu</th><th>sigma</th><th>lp</th><th>n_steps</th><th>is_accept</th><th>acceptance_rate</th><th>...</th></tr><tr><td>1</td><td>501</td><td>1</td><td>1.4245</td><td>0.709536</td><td>-3386.95</td><td>7.0</td><td>1.0</td><td>0.890442</td><td></td></tr><tr><td>2</td><td>502</td><td>1</td><td>1.46554</td><td>0.744388</td><td>-3387.03</td><td>7.0</td><td>1.0</td><td>0.962354</td><td></td></tr><tr><td>3</td><td>503</td><td>1</td><td>1.47398</td><td>0.733061</td><td>-3387.39</td><td>3.0</td><td>1.0</td><td>0.866933</td><td></td></tr><tr><td>4</td><td>504</td><td>1</td><td>1.40188</td><td>0.707835</td><td>-3387.55</td><td>5.0</td><td>1.0</td><td>0.842671</td><td></td></tr><tr><td>5</td><td>505</td><td>1</td><td>1.47211</td><td>0.724482</td><td>-3387.73</td><td>7.0</td><td>1.0</td><td>0.723644</td><td></td></tr><tr><td>6</td><td>506</td><td>1</td><td>1.46627</td><td>0.700764</td><td>-3389.65</td><td>7.0</td><td>1.0</td><td>0.54742</td><td></td></tr><tr><td>7</td><td>507</td><td>1</td><td>1.45942</td><td>0.72032</td><td>-3387.29</td><td>1.0</td><td>1.0</td><td>1.0</td><td></td></tr><tr><td>8</td><td>508</td><td>1</td><td>1.40325</td><td>0.707978</td><td>-3387.49</td><td>3.0</td><td>1.0</td><td>0.858343</td><td></td></tr><tr><td>9</td><td>509</td><td>1</td><td>1.4823</td><td>0.734451</td><td>-3387.77</td><td>5.0</td><td>1.0</td><td>0.389775</td><td></td></tr><tr><td>10</td><td>510</td><td>1</td><td>1.47898</td><td>0.727596</td><td>-3387.96</td><td>3.0</td><td>1.0</td><td>0.792604</td><td></td></tr><tr><td>...</td></tr></tbody></table>
 
 <pre class='language-julia'><code class='language-julia'>summarize(primarycensoreddist_fit)</code></pre>
-<table><tbody><tr><th></th><th>parameters</th><th>mean</th><th>std</th><th>mcse</th><th>ess_bulk</th><th>ess_tail</th><th>rhat</th><th>ess_per_sec</th></tr><tr><td>1</td><td>:mu</td><td>1.44572</td><td>0.0345615</td><td>0.000941969</td><td>1373.64</td><td>1398.85</td><td>1.00148</td><td>9.4767</td></tr><tr><td>2</td><td>:sigma</td><td>0.727665</td><td>0.0266877</td><td>0.000726168</td><td>1372.47</td><td>1628.01</td><td>1.00129</td><td>9.46865</td></tr></tbody></table>
+<table><tbody><tr><th></th><th>parameters</th><th>mean</th><th>std</th><th>mcse</th><th>ess_bulk</th><th>ess_tail</th><th>rhat</th><th>ess_per_sec</th></tr><tr><td>1</td><td>:mu</td><td>1.44572</td><td>0.0345615</td><td>0.000941969</td><td>1373.64</td><td>1398.85</td><td>1.00148</td><td>9.40468</td></tr><tr><td>2</td><td>:sigma</td><td>0.727665</td><td>0.0266877</td><td>0.000726168</td><td>1372.47</td><td>1628.01</td><td>1.00129</td><td>9.39669</td></tr></tbody></table>
 
 <pre class='language-julia'><code class='language-julia'>let
     f = pairplot(primarycensoreddist_fit)
@@ -350,4 +337,4 @@ end</code></pre>
 
 <div class="markdown"><p>We see that the model has converged and the diagnostics look good. We also see that the posterior means are very near the true parameters and the 90% credible intervals include the true parameters.</p></div>
 
-<!-- PlutoStaticHTML.End --></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Overview</a><a class="docs-footer-nextpage" href="../../../showcase/">Overview »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.13.0 on <span class="colophon-date" title="Sunday 6 July 2025 20:38">Sunday 6 July 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<!-- PlutoStaticHTML.End --></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Overview</a><a class="docs-footer-nextpage" href="../../../showcase/">Overview »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.13.0 on <span class="colophon-date" title="Sunday 6 July 2025 21:24">Sunday 6 July 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
