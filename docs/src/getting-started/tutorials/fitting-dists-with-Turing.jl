@@ -97,20 +97,12 @@ md"Let's generates all the $n$ samples by recreating the primary censored sampli
 Generates samples from the (possibly truncated) censored distribution with delay distribution `dist` and primary censoring distribution `censoring`, and applies a secondary censoring window of width `swindow` on the observation.
 
 If `D<Inf` then the secondary time is also right-truncated at time `D`.
-
-Note: This function generates samples. When fitting models, we'll use `within_interval_censored` 
-to calculate the probability of observing data within specific intervals.
 """
 function rpcens(dist, censoring; swindow = 1, D = Inf)
-    # Create primary censored distribution and apply truncation
     cens_dist = primarycensored(dist, censoring) |>
-                d -> truncated(d; upper = D)
-    
-    # Sample from the distribution
-    T = rand(cens_dist)
-    
-    # Apply secondary censoring window by rounding down to nearest multiple
-    return (T ÷ swindow) * swindow
+                d -> truncated(d; upper = D) |>
+                d -> discretise(d, swindow)
+    return rand(cens_dist)
 end
 
 # ╔═╡ a063cf93-9cd2-4c8b-9c0d-87075d1fa20d
@@ -194,7 +186,7 @@ We'll start by fitting a naive model using NUTS from `Turing`. We define the mod
 "
 
 # ╔═╡ a257ce07-efbe-45e1-a8b0-ada40c29de8d
-@model function naive_model(y, n)
+@model function naive_model(N, y, n)
     mu ~ Normal(1.0, 1.0)
     sigma ~ truncated(Normal(0.5, 1.0); lower = 0.0)
     d = LogNormal(mu, sigma)
@@ -211,6 +203,7 @@ Now lets instantiate this model with data
 
 # ╔═╡ 4cf596f1-0042-4990-8d0a-caa8ba1db0c7
 naive_mdl = naive_model(
+    size(delay_counts, 1),
     delay_counts.observed_delay .+ 1e-6, # Add a small constant to avoid log(0)
     delay_counts.n)
 
@@ -265,10 +258,14 @@ We make a new `Turing` model that uses the package's distribution types directly
     dist = LogNormal(mu, sigma)
 
     for i in eachindex(y)
-        # Create primary censored distribution with truncation and interval censoring
-        interval_dist = primarycensored(dist, Uniform(0.0, pws[i])) |>
-                        d -> truncated(d; upper = Ds[i]) |>
-                        d -> within_interval_censored(d, y[i], y_upper[i])
+        # Create primary censored distribution
+        pcens_dist = primarycensored(dist, Uniform(0.0, pws[i]))
+        
+        # Apply truncation if needed
+        pcens_dist = truncated(pcens_dist; upper = Ds[i])
+        
+        # Apply interval censoring for the observed delay interval
+        interval_dist = within_interval_censored(pcens_dist, y[i], y_upper[i])
         
         # Add log probability
         Turing.@addlogprob! n[i] * logpdf(interval_dist)

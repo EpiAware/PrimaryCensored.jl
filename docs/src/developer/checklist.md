@@ -1,7 +1,7 @@
 # Checklists
 
 The purpose of this page is to collate a series of checklists for commonly
-performed changes to the source code of EpiAware. It has been adapted from `Documenter.jl`.
+performed changes to the source code of PrimaryCensored.jl. It has been adapted from `Documenter.jl`.
 
 In each case, copy the checklist into the description of the pull request.
 
