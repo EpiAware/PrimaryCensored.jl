@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.0
+# v0.20.11
 
 using Markdown
 using InteractiveUtils
@@ -97,12 +97,23 @@ md"Let's generates all the $n$ samples by recreating the primary censored sampli
 Generates samples from the (possibly truncated) censored distribution with delay distribution `dist` and primary censoring distribution `censoring`, and applies a secondary censoring window of width `swindow` on the observation.
 
 If `D<Inf` then the secondary time is also right-truncated at time `D`.
+
+Note: This function generates samples. When fitting models, we'll use `within_interval_censored` 
+to calculate the probability of observing data within specific intervals.
 """
 function rpcens(dist, censoring; swindow = 1, D = Inf)
-    cens_dist = primarycensored(dist, censoring) |>
-                d -> D < Inf ? truncated(d; upper = D) : d
+    # Create primary censored distribution
+    cens_dist = primarycensored(dist, censoring)
+    
+    # Apply truncation if needed
+    if D < Inf
+        cens_dist = truncated(cens_dist; upper = D)
+    end
+    
+    # Sample from the distribution
     T = rand(cens_dist)
-
+    
+    # Apply secondary censoring window by rounding down to nearest multiple
     return (T ÷ swindow) * swindow
 end
 
@@ -187,7 +198,7 @@ We'll start by fitting a naive model using NUTS from `Turing`. We define the mod
 "
 
 # ╔═╡ a257ce07-efbe-45e1-a8b0-ada40c29de8d
-@model function naive_model(N, y, n)
+@model function naive_model(y, n)
     mu ~ Normal(1.0, 1.0)
     sigma ~ truncated(Normal(0.5, 1.0); lower = 0.0)
     d = LogNormal(mu, sigma)
@@ -204,7 +215,6 @@ Now lets instantiate this model with data
 
 # ╔═╡ 4cf596f1-0042-4990-8d0a-caa8ba1db0c7
 naive_mdl = naive_model(
-    size(delay_counts, 1),
     delay_counts.observed_delay .+ 1e-6, # Add a small constant to avoid log(0)
     delay_counts.n)
 
