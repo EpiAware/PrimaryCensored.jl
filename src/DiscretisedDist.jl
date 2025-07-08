@@ -14,7 +14,7 @@ where observations are rounded to the nearest time interval (e.g., daily reporti
 using PrimaryCensored, Distributions
 
 # Discretise a normal distribution to daily intervals
-d = discretised(Normal(5, 2), 1.0)
+d = discretise(Normal(5, 2), 1.0)
 
 # Sample from discretised distribution
 samples = rand(d, 1000)
@@ -62,12 +62,12 @@ Base.eltype(::Type{<:DiscretisedDist{D, T}}) where {D, T} = promote_type(eltype(
 
 function Distributions.minimum(d::DiscretisedDist)
     cont_min = minimum(d.dist)
-    return floor(cont_min / d.interval) * d.interval
+    return floor_to_interval(cont_min, d.interval)
 end
 
 function Distributions.maximum(d::DiscretisedDist)
     cont_max = maximum(d.dist)
-    return floor(cont_max / d.interval) * d.interval
+    return floor_to_interval(cont_max, d.interval)
 end
 
 function Distributions.insupport(d::DiscretisedDist, x::Real)
@@ -91,8 +91,8 @@ end
 
 function Distributions.cdf(d::DiscretisedDist, x::Real)
     # CDF at discretised point x
-    discretised_x = floor(x / d.interval) * d.interval
-    return cdf(d.dist, discretised_x + d.interval)
+    discretised_x = floor_to_interval(x, d.interval)
+    return cdf(d.dist, discretised_x)
 end
 
 function Distributions.logcdf(d::DiscretisedDist, x::Real)
@@ -112,5 +112,9 @@ end
 function Base.rand(rng::AbstractRNG, d::DiscretisedDist)
     # Sample from continuous distribution and discretise
     x = rand(rng, d.dist)
-    return floor(x / d.interval) * d.interval
+    return floor_to_interval(x, d.interval)
+end
+
+function floor_to_interval(x::Real, interval::Real)
+    return floor(x / interval) * interval
 end
