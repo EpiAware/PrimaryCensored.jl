@@ -238,7 +238,7 @@ md"
 We'll now fit an improved model using the package's built-in distribution types. We'll use:
 - `primarycensored` to construct primary event censored distributions
 - `truncated` to handle right truncation when observation time is finite
-- `within_interval_censored` to handle the secondary interval censoring
+- `discretise` to handle the secondary interval censoring
 
 This approach directly uses the package's distribution interface, which automatically handles:
 - The primary and secondary censoring windows, which can vary in length.
@@ -256,19 +256,15 @@ We make a new `Turing` model that uses the package's distribution types directly
     mu ~ Normal(1.0, 1.0)
     sigma ~ truncated(Normal(0.5, 0.5); lower = 0.0)
     dist = LogNormal(mu, sigma)
+    pcens_dists = map(pws, Ds, swindows) do pw, D, sw
+        dist |>
+            d -> primarycensored(d, Uniform(0.0, pw)) |>
+            d -> truncated(d; upper = D) |>
+            d -> discretise(d, sw)
+    end
 
     for i in eachindex(y)
-        # Create primary censored distribution
-        pcens_dist = primarycensored(dist, Uniform(0.0, pws[i]))
-        
-        # Apply truncation if needed
-        pcens_dist = truncated(pcens_dist; upper = Ds[i])
-        
-        # Apply interval censoring for the observed delay interval
-        interval_dist = within_interval_censored(pcens_dist, y[i], y_upper[i])
-        
-        # Add log probability
-        Turing.@addlogprob! n[i] * logpdf(interval_dist)
+        Turing.@addlogprob! n[i] * logpdf(pcens_dists[i], y[i])
     end
 end
 

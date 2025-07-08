@@ -97,5 +97,5 @@ function Base.rand(
         rng::Random.AbstractRNG, d::WithinIntervalCensored)
     # Sample from the underlying distribution truncated to the interval
     truncated_dist = truncated(d.dist; lower = d.lower, upper = d.upper)
-    return rand(rng, truncated_dist)
+    return d.lower
 end
