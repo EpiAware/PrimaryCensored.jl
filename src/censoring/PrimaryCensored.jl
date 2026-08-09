@@ -23,9 +23,9 @@ when debugging.
 Passing the solver method as a concrete object keeps the return type concrete
 even when the delay parameters are runtime values (e.g. inside a probabilistic
 model). The former `solver` keyword has been removed: numeric integration now
-lives in ConvolvedDistributions and uses its fixed default quadrature (custom
-solver payloads are not yet honoured there — tracked as
-[ConvolvedDistributions#92](https://github.com/EpiAware/ConvolvedDistributions.jl/issues/92)).
+lives in ConvolvedDistributions and uses its fixed default quadrature. Custom
+solver payloads are not yet honoured there, tracked as
+[ConvolvedDistributions#148](https://github.com/EpiAware/ConvolvedDistributions.jl/issues/148).
 
 # Arguments
 - `dist`: The delay distribution from primary event to observation
