@@ -26,7 +26,7 @@ md"""
 md"""
 ### What might I need to know before starting
 
-`convolve_series(series, delay)` is a discrete convolution. The delay is
+`convolve_series(delay, series)` is a discrete convolution. The delay is
 turned into a probability mass function on a lag grid, and the series entry at
 time `i` is smeared forward by that mass. For a continuous delay the grid step
 is the `interval` keyword (default `1`), so be sure the series and the delay are
@@ -65,23 +65,30 @@ draw(
 )
 
 md"""
-The `interval` keyword sets the grid step, and any other keyword passes through
-to [`double_interval_censored`](@ref) (e.g. a `primary_event`).
+### A weekly (interval-censored) delay
+
+The `interval` keyword sets the delay's grid step, and any other keyword
+passes through to [`double_interval_censored`](@ref) (e.g. a `primary_event`).
+Setting `interval = 7` reads the delay on a weekly grid, so `series` must
+also be on a weekly grid: entry `i` is then read at week `(i - 1)`, not day
+`(i - 1)`. Aggregate the daily infections into weekly totals first.
+
+You can reach that weekly grid two ways: pass the raw distribution with
+`interval = 7`, or discretise it yourself with `double_interval_censored`
+(e.g. to control the binning or the primary event) and pass the result
+directly. Both give the same PMF.
 """
 
-expected_weekly = convolve_series(LogNormal(1.5, 0.75), infections; interval = 7)
-expected[1:5];
+weekly_infections = [sum(infections[(7i + 1):min(7i + 7, length(infections))])
+                     for i in 0:5]
 
-md"""
-### A pre-built interval-censored delay
+expected_weekly = convolve_series(
+    LogNormal(1.5, 0.75), weekly_infections; interval = 7)
 
-If you discretise the delay yourself (e.g. to control the binning or interval
-width), pass the `IntervalCensored` distribution directly and it is read on its
-own grid.
-"""
+delay_weekly = double_interval_censored(LogNormal(1.5, 0.75); interval = 7)
+expected_weekly_built = convolve_series(delay_weekly, weekly_infections);
 
-delay = double_interval_censored(LogNormal(1.5, 0.75); interval = 7)
-expected_weekly_built = convolve_series(delay, infections)
+expected_weekly ≈ expected_weekly_built
 
 md"""
 ### A time-varying delay
@@ -99,7 +106,8 @@ expected_timevarying = convolve_series(delays, infections)
 
 timeseries_timevarying_df = vcat(
     DataFrame(t = t, count = infections, series = "Infections"),
-    DataFrame(t = t, count = expected_timevarying, series = "Expected reports (time-varying)")
+    DataFrame(t = t, count = expected_timevarying,
+        series = "Expected reports (time-varying)")
 )
 draw(
     data(timeseries_timevarying_df) * mapping(:t, :count, color = :series) *
