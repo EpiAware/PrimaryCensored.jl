@@ -43,6 +43,21 @@ export primary_censored, interval_censored, double_interval_censored
 # Re-exported from ConvolvedDistributions.
 export AnalyticalSolver, NumericSolver
 
+"""
+Solver method using closed-form solutions where available, falling
+back to quadrature otherwise.
+Re-exported from `ConvolvedDistributions`; see
+[`ConvolvedDistributions.AnalyticalSolver`](@extref) for details.
+"""
+AnalyticalSolver
+
+"""
+Solver method that always uses quadrature integration.
+Re-exported from `ConvolvedDistributions`; see
+[`ConvolvedDistributions.NumericSolver`](@extref) for details.
+"""
+NumericSolver
+
 # Exported distributions
 export ExponentiallyTilted
 
