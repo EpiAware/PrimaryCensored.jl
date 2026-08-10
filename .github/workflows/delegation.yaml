@@ -1,6 +1,14 @@
 name: Delegation
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/censoring/PrimaryCensored.jl'
+      - 'test/delegation/**'
+      - 'test/fixtures/**'
+      - 'test/Project.toml'
+      - '.github/workflows/delegation.yaml'
   pull_request:
     paths:
       - 'src/censoring/PrimaryCensored.jl'
