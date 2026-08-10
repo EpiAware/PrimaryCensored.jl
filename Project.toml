@@ -31,6 +31,14 @@ CensoredDistributionsEnzymeExt = "Enzyme"
 CensoredDistributionsMooncakeExt = "Mooncake"
 
 [compat]
+# The delegation harness (test/delegation/) pins ConvolvedDistributions
+# to EpiAware/ConvolvedDistributions.jl#feat/logspace-uniform-window
+# (PR #158) and EpiAwareADTools to
+# EpiAware/EpiAwareADTools.jl#fix/primal-distribution-truncated (PR #60)
+# via [sources] on Julia 1.11+. Once those land and are registered
+# (0.4.1 and 0.1.3 respectively), raise the two floors below to match
+# and delete both git pins from test/Project.toml and
+# test/delegation/Project.toml.
 ChainRulesCore = "1"
 ConvolvedDistributions = "0.4"
 Distributions = "0.25"

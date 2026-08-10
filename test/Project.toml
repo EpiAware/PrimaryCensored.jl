@@ -7,6 +7,7 @@ Coverage = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DynamicPPL = "366bfd00-2699-11ea-058f-f148b4cae6d8"
+EpiAwareADTools = "908e2895-a690-4874-a954-ca006cb9734d"
 ExplicitImports = "7d51a73a-1435-4ff3-83d9-f097790105c7"
 FlexiChains = "4a37a8b9-6e57-4b92-8664-298d46e639f7"
 HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
@@ -24,3 +25,9 @@ Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
 
 [sources]
 CensoredDistributions = {path = ".."}
+# Unreleased fixes this PR depends on (see the PR body for the full
+# rationale). Julia 1.11+ honours these; Julia 1.10 silently ignores
+# `[sources]` git pins on already-registered packages and resolves the
+# registry version instead, so the lts leg is unaffected either way.
+ConvolvedDistributions = {url = "https://github.com/EpiAware/ConvolvedDistributions.jl", rev = "feat/logspace-uniform-window"}
+EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "fix/primal-distribution-truncated"}
