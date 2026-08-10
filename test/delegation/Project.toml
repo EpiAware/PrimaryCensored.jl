@@ -1,0 +1,21 @@
+[deps]
+CensoredDistributions = "b2eeebe4-5992-4301-9193-7ebc9f62c855"
+ConvolvedDistributions = "f5b942c9-bc5b-4664-8486-7f531bb06742"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+EpiAwareADTools = "908e2895-a690-4874-a954-ca006cb9734d"
+FastGaussQuadrature = "442a2c76-b920-505d-bb47-c5924d526838"
+LegacyPrimaryCensored = "0361a9aa-24f0-45dd-b20d-2bf92d1c42ef"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
+TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
+
+[sources]
+CensoredDistributions = {path = "../.."}
+LegacyPrimaryCensored = {path = "../fixtures/LegacyPrimaryCensored"}
+ConvolvedDistributions = {url = "https://github.com/EpiAware/ConvolvedDistributions.jl", rev = "feat/logspace-uniform-window"}
+EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "fix/primal-distribution-truncated"}
+
+[compat]
+julia = "1.11, 1.12"
