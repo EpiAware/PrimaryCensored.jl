@@ -28,8 +28,8 @@
     # ~30x -- outside the 4x `no_worse` slack. `ccdf`/`logccdf` only;
     # `cdf`/`logcdf` and every other pair are unaffected. Measured
     # directly against the BigFloat reference, not assumed.
-    # See EpiAware/ConvolvedDistributions.jl issue (filed alongside
-    # this PR) for the root cause.
+    # See EpiAware/ConvolvedDistributions.jl#166 for the measured
+    # numbers and root-cause discussion.
     known_gamma_ccdf_tail=Set(((Gamma(2.0, 3.0), Uniform(0.0, 1.0)),
         (Gamma(2.0, 3.0), Uniform(2.0, 3.0))))
 
@@ -293,8 +293,8 @@ end
     # `partial_expectation` is unreachable from `uniform_window_cdf`
     # itself (it only calls it for `h > dmin >= 0`), so this is
     # defensive code on an upstream public extension point; the guard's
-    # own coverage belongs to ConvolvedDistributions (issue filed
-    # alongside this PR).
+    # own coverage belongs to ConvolvedDistributions
+    # (EpiAware/ConvolvedDistributions.jl#167).
     for (k, λ) in ((2.0, 1.5), (1.5, 2.0), (0.7, 3.0))
         g=Legacy._make_weibull_g(k, λ)
         M=CD.partial_expectation(Weibull(k, λ))
