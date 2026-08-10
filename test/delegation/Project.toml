@@ -14,7 +14,8 @@ TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 [sources]
 CensoredDistributions = {path = "../.."}
 LegacyPrimaryCensored = {path = "../fixtures/LegacyPrimaryCensored"}
-ConvolvedDistributions = {url = "https://github.com/EpiAware/ConvolvedDistributions.jl", rev = "feat/logspace-uniform-window"}
+# See test/Project.toml for the rationale behind each pin.
+ConvolvedDistributions = {url = "https://github.com/EpiAware/ConvolvedDistributions.jl", rev = "808fb36e82dd79bd727fa18597a6b505f9767c8b"}
 EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "fix/primal-distribution-truncated"}
 
 [compat]

@@ -29,5 +29,12 @@ CensoredDistributions = {path = ".."}
 # rationale). Julia 1.11+ honours these; Julia 1.10 silently ignores
 # `[sources]` git pins on already-registered packages and resolves the
 # registry version instead, so the lts leg is unaffected either way.
-ConvolvedDistributions = {url = "https://github.com/EpiAware/ConvolvedDistributions.jl", rev = "feat/logspace-uniform-window"}
+#
+# ConvolvedDistributions: pinned to the `main` commit that merged both
+# #149 (custom solver payloads) and #158 (closed-form logcdf/ccdf/
+# logccdf for uniform-window pairs) -- both landed on main as v0.4.1
+# but are not yet registered. A commit SHA, not a branch, so this pin
+# does not silently drift if more commits land on main before release.
+ConvolvedDistributions = {url = "https://github.com/EpiAware/ConvolvedDistributions.jl", rev = "808fb36e82dd79bd727fa18597a6b505f9767c8b"}
+# EpiAwareADTools: #60 is still open, so this pins its branch tip.
 EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "fix/primal-distribution-truncated"}
