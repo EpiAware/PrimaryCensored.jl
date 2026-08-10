@@ -36,5 +36,8 @@ CensoredDistributions = {path = ".."}
 # but are not yet registered. A commit SHA, not a branch, so this pin
 # does not silently drift if more commits land on main before release.
 ConvolvedDistributions = {url = "https://github.com/EpiAware/ConvolvedDistributions.jl", rev = "808fb36e82dd79bd727fa18597a6b505f9767c8b"}
-# EpiAwareADTools: #60 is still open, so this pins its branch tip.
-EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "fix/primal-distribution-truncated"}
+# EpiAwareADTools: #60 is still open. Pinned to its current tip commit
+# SHA, not the branch name, for the same drift reason as the
+# ConvolvedDistributions pin above -- update this SHA if #60 gains
+# further commits before it merges.
+EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "1348d8eaee85d501a04bad4c3732c6ec28611537"}
