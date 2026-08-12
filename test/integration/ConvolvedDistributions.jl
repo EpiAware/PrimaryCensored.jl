@@ -238,3 +238,104 @@ end
     vector = vcat(fill(LogNormal(1.5, 0.75), 3), fill(LogNormal(1.0, 0.6), 4))
     @test convolve_series(runs, series) ≈ convolve_series(vector, series)
 end
+
+@testitem "Custom GaussLegendre node count changes the numeric CDF" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    # CD#92 regression guard: a non-default payload must reach the
+    # quadrature, not be accepted and ignored. n = 64 is the default and
+    # takes the native panelled path, so it cannot be used here.
+    dist, primary, x = Gamma(2.0, 1.5), Uniform(0.0, 1.0), 2.0
+    d_def = primary_censored(dist, primary; method = NumericSolver())
+    d_n2 = primary_censored(dist, primary;
+        method = NumericSolver(GaussLegendre(; n = 2)))
+
+    @test cdf(d_n2, x) != cdf(d_def, x)
+    @test !isapprox(cdf(d_n2, x), cdf(d_def, x); atol = 1e-7)
+    # Coarse but not wrong: measured gap is 9.8e-6.
+    @test isapprox(cdf(d_n2, x), cdf(d_def, x); atol = 1e-4)
+
+    # More nodes converge onto the default.
+    d_n256 = primary_censored(dist, primary;
+        method = NumericSolver(GaussLegendre(; n = 256)))
+    @test cdf(d_n256, x) ≈ cdf(d_def, x) atol=1e-12
+end
+
+@testitem "Analytic fallback honours the solver payload" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    # No closed form for a truncated-Normal primary, so AnalyticalSolver
+    # falls through to quadrature and must use the stored payload.
+    dist = Gamma(2.0, 1.5)
+    primary = truncated(Normal(0.5, 0.3), 0.0, 1.0)
+    x = 2.0
+    a_def = primary_censored(dist, primary)
+    a_n2 = primary_censored(dist, primary; solver = GaussLegendre(; n = 2))
+
+    @test a_def.method isa AnalyticalSolver
+    @test !isapprox(cdf(a_n2, x), cdf(a_def, x); atol = 1e-6)
+    @test isapprox(cdf(a_n2, x), cdf(a_def, x); atol = 1e-3)
+end
+
+@testitem "Closed-form path ignores the solver payload" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    # Gamma + Uniform has a closed form, so the payload never reaches
+    # quadrature and the answer is bit-identical.
+    dist, primary, x = Gamma(2.0, 1.5), Uniform(0.0, 1.0), 2.0
+    @test cdf(primary_censored(dist, primary), x) ==
+          cdf(primary_censored(dist, primary;
+            solver = GaussLegendre(; n = 2)), x)
+end
+
+@testitem "Integrals.jl algorithms route through the extension" begin
+    using Distributions
+    using Integrals: QuadGKJL, HCubatureJL
+
+    dist, primary = Gamma(2.0, 1.5), Uniform(0.0, 1.0)
+    d_def = primary_censored(dist, primary; method = NumericSolver())
+    for alg in (QuadGKJL(), HCubatureJL())
+        d = primary_censored(dist, primary; method = NumericSolver(alg))
+        @test d.method.solver === alg
+        for x in (1.0, 2.0, 3.0, 5.0)
+            @test cdf(d, x) ≈ cdf(d_def, x) atol=1e-10
+        end
+    end
+end
+
+@testitem "A solver with no integrate method errors on the numeric path" begin
+    using Distributions
+
+    struct BrokenSolver end
+
+    # Reaches quadrature: no `integrate(::BrokenSolver, ...)` method.
+    d = primary_censored(Exponential(2.0), Uniform(0.0, 1.0);
+        solver = BrokenSolver())
+    @test_throws MethodError cdf(d, 2.0)
+
+    d_forced = primary_censored(Gamma(2.0, 3.0), Uniform(0.0, 1.0);
+        method = NumericSolver(BrokenSolver()))
+    @test_throws MethodError cdf(d_forced, 2.0)
+
+    # Closed form never consults the payload, so this works.
+    d_analytic = primary_censored(Gamma(2.0, 3.0), Uniform(0.0, 1.0);
+        solver = BrokenSolver())
+    @test 0 < cdf(d_analytic, 2.0) < 1
+end
+
+@testitem "Concrete solver payload keeps the return type concrete" begin
+    using Distributions, Test
+    using CensoredDistributions: GaussLegendre
+
+    f(θ,
+        y) = cdf(
+        primary_censored(Gamma(θ[1], θ[2]), Uniform(0.0, 1.0);
+            method = NumericSolver(GaussLegendre(; n = 32))),
+        y)
+    @test isconcretetype(typeof(primary_censored(Gamma(2.0, 1.5),
+        Uniform(0.0, 1.0); solver = GaussLegendre(; n = 32))))
+    @inferred f([2.0, 1.5], 2.0)
+end

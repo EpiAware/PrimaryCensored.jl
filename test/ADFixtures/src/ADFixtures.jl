@@ -360,6 +360,22 @@ function scenarios(; with_reference::Bool = false)
             obs),
         [1.0, 0.75, 0.5], (Constant(obs),))
 
+    # Pluggable integration path (#208). The numeric primary-censored CDF
+    # routes its quadrature through an explicit `GaussLegendre` solver
+    # passed via the `solver` keyword. A 128-node rule (twice the default)
+    # makes the quadrature cost the dominant term and gives a gradient
+    # correctness check on the payload-forwarding path.
+    _push!("PrimaryCensored Gamma+truncNormal numerical GaussLegendre solver",
+        (θ,
+            obs) -> sum(
+            x -> logpdf(
+                primary_censored(Gamma(θ[1], θ[2]),
+                    truncated(Normal(0.5, 0.3), 0.0, 1.0);
+                    solver = CensoredDistributions.GaussLegendre(; n = 128)),
+                x),
+            obs),
+        [2.0, 1.5], (Constant(obs),))
+
     # DoubleIntervalCensored with a Gamma delay (only LogNormal covered).
     _push!("DoubleIntervalCensored Gamma",
         (θ,

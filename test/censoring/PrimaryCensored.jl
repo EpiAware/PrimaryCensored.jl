@@ -87,7 +87,9 @@ end
 @testitem "Test ccdf" begin
     using Distributions
     use_dist = primary_censored(LogNormal(3.5, 1.5), Uniform(1, 2))
-    @test ccdf(use_dist, 1e8) ≈ 0.0
+    # ConvolvedDistributions#158 gives a more accurate deep-right-tail ccdf
+    # than a flush to exact 0.0, so an absolute tolerance is needed here.
+    @test ccdf(use_dist, 1e8) ≈ 0.0 atol=1e-15
     @test ccdf(use_dist, 0.0) ≈ 1
     @test logccdf(use_dist, 0.0) ≈ 0.0
 end
@@ -391,4 +393,45 @@ end
     q50 = quantile(truncated_dist, 0.5)
     @test 1.0 ≤ q50 ≤ 10.0
     @test cdf(truncated_dist, q50) ≈ 0.5 rtol=1e-4
+end
+
+@testitem "solver kwarg builds an AnalyticalSolver with that payload" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    custom = GaussLegendre(; n = 128)
+    d = primary_censored(Gamma(2.0, 1.5), Uniform(0, 1); solver = custom)
+
+    @test d.method isa AnalyticalSolver
+    @test d.method.solver === custom
+end
+
+@testitem "Default solver payload is GaussLegendre(64)" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    d = primary_censored(Gamma(2.0, 3.0), Uniform(0.0, 1.0))
+    @test d.method isa AnalyticalSolver
+    @test d.method.solver isa GaussLegendre
+    @test d.method.solver.n == 64
+end
+
+@testitem "Passing both method and solver errors" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    @test_throws ArgumentError primary_censored(
+        Gamma(2.0, 1.5), Uniform(0, 1);
+        method = NumericSolver(), solver = GaussLegendre(; n = 8))
+end
+
+@testitem "double_interval_censored forwards the solver payload" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    custom = GaussLegendre(; n = 128)
+    d = double_interval_censored(Gamma(2.0, 1.5); upper = 10.0,
+        interval = 1.0, solver = custom)
+    pc = get_dist(get_dist(d))          # IntervalCensored -> Truncated -> PC
+    @test pc.method.solver === custom
 end
