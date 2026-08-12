@@ -50,7 +50,7 @@ end
     @test minimum(use_dist_trunc_rn) >= 3
 end
 
-@tesitem "Params calls" begin
+@testitem "Params calls" begin
     using Distributions
     use_dist = primary_censored(LogNormal(3.5, 1.5), Uniform(1, 2))
     extracted_params = params(use_dist)
@@ -87,7 +87,12 @@ end
 @testitem "Test ccdf" begin
     using Distributions
     use_dist = primary_censored(LogNormal(3.5, 1.5), Uniform(1, 2))
-    @test ccdf(use_dist, 1e8) ≈ 0.0
+    # With ConvolvedDistributions' dedicated survival closed form
+    # (pinned in test/Project.toml, see PR body), this correctly
+    # returns a tiny positive value (~1.3e-23) rather than the old
+    # `1 - cdf` catastrophic-cancellation result of exactly 0.0, so an
+    # `atol` is required for an "approximately zero" comparison.
+    @test ccdf(use_dist, 1e8) ≈ 0.0 atol = 1e-10
     @test ccdf(use_dist, 0.0) ≈ 1
     @test logccdf(use_dist, 0.0) ≈ 0.0
 end

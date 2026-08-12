@@ -7,6 +7,7 @@ Coverage = "a2441757-f6aa-5fb2-8edb-039e3f45d037"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DynamicPPL = "366bfd00-2699-11ea-058f-f148b4cae6d8"
+EpiAwareADTools = "908e2895-a690-4874-a954-ca006cb9734d"
 ExplicitImports = "7d51a73a-1435-4ff3-83d9-f097790105c7"
 FlexiChains = "4a37a8b9-6e57-4b92-8664-298d46e639f7"
 HypothesisTests = "09f84164-cd44-5f33-b23f-e6b0d136a0d5"
@@ -24,3 +25,28 @@ Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
 
 [sources]
 CensoredDistributions = {path = ".."}
+# ConvolvedDistributions 0.4.1 (which carries #149 and #158) is now
+# registered -- see [compat] below -- so no git pin is needed here.
+#
+# EpiAwareADTools: PR #60 (the `primal_distribution` fix for
+# Truncated/Censored) merged to `main` as e20662bd, which still carries
+# `version = "0.1.2"`. That fix has not shipped in a registry release:
+# `main` moved on past e20662bd to bump the package to 0.2.0, which
+# ConvolvedDistributions 0.4.1's own `EpiAwareADTools = "0.1.1"` compat
+# rejects, so pinning `main`'s current tip is unresolvable. Pinned to
+# the PR #60 merge commit by SHA, not a branch, so this does not
+# silently drift. Delete this pin once EpiAwareADTools 0.2.0 (or a
+# release carrying the same fix under a 0.1.x version) registers *and*
+# ConvolvedDistributions ships a release whose compat admits it.
+EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "e20662bdf06cf69989acfddeeddbe7dd59746db6"}
+
+[compat]
+# 0.4.1 is registered and carries both #149 (custom solver payloads)
+# and #158 (closed-form logcdf/ccdf/logccdf for uniform-window pairs).
+ConvolvedDistributions = "0.4.1"
+# 0.1.2 is the closest expressible floor; the `primal_distribution`
+# fix for Truncated/Censored (EpiAwareADTools#60) merged after 0.1.2
+# was tagged and is supplied by the git pin above, not by this compat
+# entry. Raise to "0.2" and delete the pin above once EpiAwareADTools
+# 0.2.0 registers and ConvolvedDistributions admits it.
+EpiAwareADTools = "0.1.2"

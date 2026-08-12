@@ -1,0 +1,45 @@
+name: Delegation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/censoring/PrimaryCensored.jl'
+      - 'test/delegation/**'
+      - 'test/fixtures/**'
+      - 'test/Project.toml'
+      - '.github/workflows/delegation.yaml'
+  pull_request:
+    paths:
+      - 'src/censoring/PrimaryCensored.jl'
+      - 'test/delegation/**'
+      - 'test/fixtures/**'
+      - 'test/Project.toml'
+      - '.github/workflows/delegation.yaml'
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  delegation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Non-blocking until EpiAwareADTools registers a version carrying
+    # the PR #60 `primal_distribution` fix that ConvolvedDistributions
+    # also accepts, and the git pin in test/delegation/Project.toml
+    # becomes a plain compat bound.
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        julia-version: ['1.11', '1']
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: ${{ matrix.julia-version }}
+      - uses: julia-actions/cache@v3
+      - run: julia --project=test/delegation -e 'using Pkg; Pkg.instantiate()'
+      - run: julia --project=test/delegation test/delegation/runtests.jl
