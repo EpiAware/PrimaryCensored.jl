@@ -21,7 +21,7 @@ using Distributions: Distributions, UnivariateDistribution,
 
 import ConvolvedDistributions: convolve_series, delay_masses, quantile_by_optimization
 import ConvolvedDistributions: Convolved, AnalyticalSolver, NumericSolver,
-                               AbstractSolverMethod
+                               AbstractSolverMethod, GaussLegendre
 
 # Force ConvolvedDistributions' Optimization extension to load for qualified
 # `quantile_by_optimization` support (imported for the side effect, not for any

@@ -19,6 +19,7 @@ The order of operations ensures mathematical correctness, particularly that trun
 - `upper`: Upper truncation bound (e.g., observation time `D`). If `nothing`, no upper truncation is applied.
 - `interval`: Secondary censoring interval width (e.g., daily reporting). If `nothing`, no interval censoring is applied.
 - `method`: Primary-censoring solver method, an [`AnalyticalSolver`](@ref) or [`NumericSolver`](@ref). Defaults to `AnalyticalSolver()`. Passing a concrete method keeps the return type concrete when the delay parameters are runtime values.
+- `solver`: Quadrature payload used when `method` is not given (default: `GaussLegendre(; n = 64)`). Passing both `method` and `solver` is an error.
 
 # Returns
 A composed distribution that can be used with all standard `Distributions.jl` methods (`rand`, `pdf`, `cdf`, etc.).
@@ -65,10 +66,12 @@ function double_interval_censored(
         lower::Union{Real, Nothing} = nothing,
         upper::Union{Real, Nothing} = nothing,
         interval::Union{Real, Nothing} = nothing,
-        method::Union{AbstractSolverMethod, Nothing} = nothing
+        method::Union{AbstractSolverMethod, Nothing} = nothing,
+        solver = nothing
 )
     # Start with primary censoring (always applied)
-    result = primary_censored(dist, primary_event; method = method)
+    result = primary_censored(dist, primary_event; method = method,
+        solver = solver)
 
     # Apply truncation if specified
     if !isnothing(lower) || !isnothing(upper)

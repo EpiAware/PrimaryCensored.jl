@@ -22,10 +22,11 @@ when debugging.
 
 Passing the solver method as a concrete object keeps the return type concrete
 even when the delay parameters are runtime values (e.g. inside a probabilistic
-model). The former `solver` keyword has been removed: numeric integration now
-lives in ConvolvedDistributions and uses its fixed default quadrature. Custom
-solver payloads are not yet honoured there, tracked as
-[ConvolvedDistributions#148](https://github.com/EpiAware/ConvolvedDistributions.jl/issues/148).
+model). Each method carries the quadrature payload used on its numeric path:
+the default `GaussLegendre(; n = 64)`, a custom `GaussLegendre(; n = ...)` for
+higher nodal accuracy, or an Integrals.jl algorithm when that package is
+loaded. The payload is only consulted when quadrature is reached, so it has no
+effect on a pair with a closed form.
 
 # Arguments
 - `dist`: The delay distribution from primary event to observation
@@ -35,6 +36,9 @@ solver payloads are not yet honoured there, tracked as
 - `method`: The solver method, an [`AnalyticalSolver`](@ref) or
   [`NumericSolver`](@ref), re-exported from `ConvolvedDistributions`.
   Defaults to `AnalyticalSolver()`.
+- `solver`: Quadrature payload used when `method` is not given (default:
+  `GaussLegendre(; n = 64)`). Passing both `method` and `solver` is an error;
+  put the payload inside the method instead, e.g. `NumericSolver(QuadGKJL())`.
 
 This is useful for modeling:
 - Infection-to-symptom onset times when infection time is uncertain
@@ -65,8 +69,9 @@ d_numeric = primary_censored(incubation, infection_window;
 "
 function primary_censored(
         dist::UnivariateDistribution, primary_event::UnivariateDistribution;
-        method::Union{AbstractSolverMethod, Nothing} = nothing)
-    resolved = _resolve_solver_method(method)
+        method::Union{AbstractSolverMethod, Nothing} = nothing,
+        solver = nothing)
+    resolved = _resolve_solver_method(method, solver)
     return PrimaryCensored(dist, primary_event; method = resolved)
 end
 
@@ -92,8 +97,10 @@ d2 = primary_censored(LogNormal(1.5, 0.75); primary_event=Uniform(0, 2))
 function primary_censored(
         dist::UnivariateDistribution;
         primary_event::UnivariateDistribution = Uniform(0, 1),
-        method::Union{AbstractSolverMethod, Nothing} = nothing)
-    return primary_censored(dist, primary_event; method = method)
+        method::Union{AbstractSolverMethod, Nothing} = nothing,
+        solver = nothing)
+    return primary_censored(dist, primary_event; method = method,
+        solver = solver)
 end
 
 @doc "
@@ -244,5 +251,15 @@ end
 # Sampler method for efficient sampling
 sampler(d::PrimaryCensored) = d
 
-_resolve_solver_method(method::AbstractSolverMethod) = method
-_resolve_solver_method(::Nothing) = AnalyticalSolver()
+# Resolve the solver method from the keyword arguments. Dispatching on the
+# argument types keeps the return type concrete without relying on constant
+# propagation through nested keyword calls.
+_resolve_solver_method(::Nothing, ::Nothing) = AnalyticalSolver()
+_resolve_solver_method(::Nothing, solver) = AnalyticalSolver(solver)
+_resolve_solver_method(method::AbstractSolverMethod, ::Nothing) = method
+
+function _resolve_solver_method(method::AbstractSolverMethod, solver)
+    throw(ArgumentError(
+        "pass either `method` or `solver`, not both; put the quadrature " *
+        "payload inside the method, e.g. `NumericSolver($solver)`"))
+end
