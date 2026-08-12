@@ -32,12 +32,20 @@ CensoredDistributionsMooncakeExt = "Mooncake"
 
 [compat]
 ChainRulesCore = "1"
-ConvolvedDistributions = "0.4"
+# 0.4.1 is the first release honouring custom solver payloads (#149) and
+# the log-space cdf/ccdf/logccdf closed forms (#158), both of which this
+# package now relies on.
+ConvolvedDistributions = "0.4.1"
 Distributions = "0.25"
 DocStringExtensions = "0.9"
 DynamicPPL = "0.39, 0.40, 0.41, 0.42"
 Enzyme = "0.13"
-EpiAwareADTools = "0.1.1"
+# 0.1.2 is the closest expressible floor; the Truncated/Censored
+# primal_distribution fix (EpiAwareADTools#60) merged after 0.1.2 tagged
+# and is supplied by the git pin in test/Project.toml. Raise to "0.2" and
+# delete that pin once EpiAwareADTools 0.2.0 registers AND
+# ConvolvedDistributions ships a release admitting it.
+EpiAwareADTools = "0.1.2"
 FlexiChains = "0.4, 0.5, 0.6"
 LogExpFunctions = "0.3, 1.0"
 Mooncake = "0.5"
