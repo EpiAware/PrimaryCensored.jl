@@ -478,7 +478,11 @@ md"""
 
 You can force the numerical backend with
 `method = NumericSolver()` when you want quadrature
-(ConvolvedDistributions' [`NumericSolver`](@ref)):
+(ConvolvedDistributions' [`NumericSolver`](@ref)).
+Each method also carries a quadrature payload: the default is a
+64-node [`GaussLegendre`](@ref) rule, but a higher node count or, with
+Integrals.jl loaded, an Integrals.jl algorithm can be substituted via
+the `solver` keyword or by wrapping it inside `method` directly:
 """
 
 ## Create an exponential distribution
@@ -496,11 +500,25 @@ pc_numeric = primary_censored(
     method = NumericSolver()
 )
 
+## Raise the quadrature node count for higher nodal accuracy
+pc_high_accuracy = primary_censored(
+    exponential_delay, primary_uniform;
+    solver = CensoredDistributions.GaussLegendre(; n = 256)
+)
+
+## Or route through an Integrals.jl algorithm instead
+pc_quadgk = primary_censored(
+    exponential_delay, primary_uniform;
+    method = NumericSolver(QuadGKJL())
+)
+
 ## Store solver information for display
 ## (.method.solver is the ConvolvedDistributions quadrature solver)
 solver_info = (
-    default = typeof(pc_default.method.solver),
-    numeric = typeof(pc_numeric.method.solver)
+    default = pc_default.method.solver,
+    numeric = pc_numeric.method.solver,
+    high_accuracy = pc_high_accuracy.method.solver,
+    quadgk = pc_quadgk.method.solver
 )
 
 md"""
