@@ -26,9 +26,10 @@ jobs:
   delegation:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    # Non-blocking until ConvolvedDistributions 0.4.1 and
-    # EpiAwareADTools 0.1.3 are registered and the git pins in
-    # test/delegation/Project.toml become plain compat bounds.
+    # Non-blocking until EpiAwareADTools registers a version carrying
+    # the PR #60 `primal_distribution` fix that ConvolvedDistributions
+    # also accepts, and the git pin in test/delegation/Project.toml
+    # becomes a plain compat bound.
     continue-on-error: true
     strategy:
       fail-fast: false

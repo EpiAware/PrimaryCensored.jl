@@ -31,14 +31,19 @@ CensoredDistributionsEnzymeExt = "Enzyme"
 CensoredDistributionsMooncakeExt = "Mooncake"
 
 [compat]
-# test/Project.toml and test/delegation/Project.toml pin, via
-# [sources] on Julia 1.11+: ConvolvedDistributions to the commit on
-# EpiAware/ConvolvedDistributions.jl `main` that merged #149 and #158
-# (both landed as v0.4.1 but are not yet registered), and
-# EpiAwareADTools to EpiAware/EpiAwareADTools.jl#fix/primal-
-# distribution-truncated (PR #60, still open). Once ConvolvedDistributions
-# 0.4.1 and EpiAwareADTools 0.1.3 are registered, raise the two floors
-# below to match and delete both git pins.
+# ConvolvedDistributions 0.4.1 is registered, so no git pin is needed
+# for it (see test/Project.toml and test/delegation/Project.toml).
+#
+# test/Project.toml and test/delegation/Project.toml still pin, via
+# [sources] on Julia 1.11+: EpiAwareADTools to the PR #60 merge commit
+# on EpiAware/EpiAwareADTools.jl `main` (the `primal_distribution` fix
+# for Truncated/Censored). That fix has not reached a registry release
+# -- `main` moved on from the merge commit to bump the package to
+# 0.2.0, which is unsatisfiable against ConvolvedDistributions 0.4.1's
+# own `EpiAwareADTools = "0.1.1"` compat. Delete that pin once
+# EpiAwareADTools registers a version carrying the fix that
+# ConvolvedDistributions also accepts, and raise the floor below to
+# match.
 ChainRulesCore = "1"
 ConvolvedDistributions = "0.4"
 Distributions = "0.25"

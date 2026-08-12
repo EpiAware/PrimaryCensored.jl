@@ -14,9 +14,11 @@ TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 [sources]
 CensoredDistributions = {path = "../.."}
 LegacyPrimaryCensored = {path = "../fixtures/LegacyPrimaryCensored"}
-# See test/Project.toml for the rationale behind each pin.
-ConvolvedDistributions = {url = "https://github.com/EpiAware/ConvolvedDistributions.jl", rev = "808fb36e82dd79bd727fa18597a6b505f9767c8b"}
-EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "fix/primal-distribution-truncated"}
+# See test/Project.toml for the rationale behind the ADTools pin.
+# ConvolvedDistributions pin dropped: 0.4.1 is registered.
+EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "e20662bdf06cf69989acfddeeddbe7dd59746db6"}
 
 [compat]
+ConvolvedDistributions = "0.4.1"
+EpiAwareADTools = "0.1.2"
 julia = "1.11, 1.12"
