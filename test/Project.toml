@@ -25,13 +25,3 @@ Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
 
 [sources]
 CensoredDistributions = {path = ".."}
-# EpiAwareADTools#60 (`primal_distribution` rebuilding Truncated/Censored
-# via public constructors) merged after 0.1.2 was tagged and is not yet
-# registered. Without it, evaluating a primary-censored distribution whose
-# DELAY is a `Truncated` throws
-# `MethodError: Truncated(::Float64, ::Float64, ::Float64)`. Pinned to the
-# merge commit on `main`, by SHA, not a branch: later commits on `main`
-# bump the version to 0.2.0, which ConvolvedDistributions 0.4.1's
-# `EpiAwareADTools = "0.1.1"` compat rejects outright.
-# Delete once 0.2.0 registers and ConvolvedDistributions admits it.
-EpiAwareADTools = {url = "https://github.com/EpiAware/EpiAwareADTools.jl", rev = "e20662bdf06cf69989acfddeeddbe7dd59746db6"}

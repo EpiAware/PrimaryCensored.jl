@@ -77,11 +77,7 @@ include("utils/get_dist.jl")
 include("convolve_series.jl")
 
 # Public API - functions that are part of public interface but not exported
-@static if VERSION >= v"1.11"
-    include("public.jl")
-else
-    # Julia 1.10 compatibility - no public keyword, but structs are accessible
-end
+include("public.jl")
 
 # Precompile workload covering the double_interval_censored pipeline for
 # representative delay distributions, toggling the solver method to hit both
