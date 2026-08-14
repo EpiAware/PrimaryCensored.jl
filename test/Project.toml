@@ -23,5 +23,34 @@ TestItemRunner = "f8b46487-2199-4994-9208-9a1283c18c0a"
 TestItems = "1c621080-faea-4a02-84b6-bbd5e436b8fe"
 Turing = "fce5fe82-541a-59a6-adf8-730c64b5f9a0"
 
+# Bounded compat for the test-only deps: unbounded entries let
+# downgrade-compat's --min=@deps resolve to arbitrarily old, sometimes
+# Project.toml-malformed releases (e.g. TestItemRunner 0.1.0, which Julia
+# 1.12's stricter Pkg parser rejects outright). CensoredDistributions is
+# pinned by [sources] below, so it carries no compat entry.
+[compat]
+Aqua = "0.8"
+BenchmarkTools = "1"
+ConvolvedDistributions = "0.4.2"
+Coverage = "1"
+Distributions = "0.25"
+Documenter = "1"
+DynamicPPL = "0.39, 0.40, 0.41, 0.42"
+EpiAwareADTools = "0.2"
+ExplicitImports = "1"
+FlexiChains = "0.4, 0.5, 0.6"
+HypothesisTests = "0.11"
+Integrals = "4, 5.1"
+Logging = "1"
+Markdown = "1"
+Pkg = "1"
+Plots = "1"
+Random = "1"
+Statistics = "1"
+Test = "1"
+TestItemRunner = "1"
+TestItems = "1"
+Turing = "0.42, 0.43, 0.44, 0.45, 0.46"
+
 [sources]
 CensoredDistributions = {path = ".."}
