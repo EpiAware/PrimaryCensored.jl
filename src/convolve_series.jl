@@ -119,6 +119,14 @@ end
 # the unit-impulse round-trip of the generic `delay_masses` fallback.
 delay_masses(d::IntervalCensored, n::Int) = _grid_pmf(d, n)
 
+# A bare primary-censored delay inside a time-varying vector hits this
+# before the generic `delay_masses` fallback, which would otherwise surface
+# an unrelated internal `primal_distribution` error. Reuse the same
+# rejection message as the single-delay `convolve_series` method above.
+function delay_masses(d::PrimaryCensored, n::Int)
+    convolve_series(d, zeros(n))
+end
+
 # Fast path: discretise a raw continuous delay on the unit grid and read its
 # grid PMF directly. This matches `convolve_series(d::ContinuousUnivariateDistribution,
 # series)`, which also defaults to `interval = 1`. Used by the time-varying /

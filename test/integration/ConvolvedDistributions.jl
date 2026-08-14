@@ -101,6 +101,17 @@ end
     @test_throws ArgumentError convolve_series(pc, series)
 end
 
+@testitem "convolve_series rejects continuous primary censoring in a time-varying vector" begin
+    using CensoredDistributions
+    using ConvolvedDistributions: convolve_series
+    using Distributions
+
+    pcs = [primary_censored(LogNormal(m, 0.75), Uniform(0, 1))
+           for m in range(1.0, 1.8; length = 3)]
+    series = [1.0, 2.0, 3.0]
+    @test_throws ArgumentError convolve_series(pcs, series)
+end
+
 @testitem "convolve_series: continuous delay discretises via double interval" begin
     using CensoredDistributions
     using ConvolvedDistributions: convolve_series
