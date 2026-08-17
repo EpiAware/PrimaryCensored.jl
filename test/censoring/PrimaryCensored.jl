@@ -11,6 +11,7 @@ end
 
 @testitem "Default constructor (analytical solver)" begin
     using Distributions
+    using ConvolvedDistributions
 
     dist = Gamma(2.0, 3.0)
     primary = Uniform(0.0, 1.0)
@@ -19,13 +20,13 @@ end
     @test d.dist === dist
     @test d.primary_event === primary
     @test d.method isa CensoredDistributions.AnalyticalSolver
-    # The default numeric fallback is the package's own lightweight
-    # `GaussLegendre` solver (no Integrals.jl dependency).
-    @test d.method.solver isa CensoredDistributions.GaussLegendre
+    # Default numeric fallback: ConvolvedDistributions' GaussLegendre solver.
+    @test d.method.solver isa ConvolvedDistributions.GaussLegendre
 end
 
 @testitem "Constructor with NumericSolver method" begin
     using Distributions
+    using ConvolvedDistributions
 
     dist = LogNormal(1.5, 0.75)
     primary = Uniform(0.0, 1.0)
@@ -34,37 +35,7 @@ end
     @test d.dist === dist
     @test d.primary_event === primary
     @test d.method isa CensoredDistributions.NumericSolver
-    @test d.method.solver isa CensoredDistributions.GaussLegendre
-end
-
-@testitem "Deprecated force_numeric still selects the solver" begin
-    using Distributions
-
-    dist = LogNormal(1.5, 0.75)
-    primary = Uniform(0.0, 1.0)
-
-    # `force_numeric` is deprecated in favour of `method`, but must keep
-    # mapping to the matching solver for backward compatibility.
-    d_numeric = primary_censored(dist, primary; force_numeric = true)
-    @test d_numeric.method isa CensoredDistributions.NumericSolver
-
-    d_analytic = primary_censored(dist, primary; force_numeric = false)
-    @test d_analytic.method isa CensoredDistributions.AnalyticalSolver
-end
-
-@testitem "Constructor with custom Integrals.jl solver" begin
-    using Distributions
-    using Integrals
-
-    # The optional Integrals.jl extension lets any Integrals.jl algorithm
-    # be passed as the solver; it is routed through `IntegralProblem`/`solve`.
-    dist = Weibull(2.0, 1.5)
-    primary = Uniform(0.0, 1.0)
-    custom_solver = HCubatureJL()
-    d = primary_censored(dist, primary; method = AnalyticalSolver(custom_solver))
-
-    @test d.method isa CensoredDistributions.AnalyticalSolver
-    @test d.method.solver === custom_solver
+    @test d.method.solver isa ConvolvedDistributions.GaussLegendre
 end
 
 @testitem "Test random generation" begin
@@ -116,7 +87,9 @@ end
 @testitem "Test ccdf" begin
     using Distributions
     use_dist = primary_censored(LogNormal(3.5, 1.5), Uniform(1, 2))
-    @test ccdf(use_dist, 1e8) ≈ 0.0
+    # ConvolvedDistributions#158 gives a more accurate deep-right-tail ccdf
+    # than a flush to exact 0.0, so an absolute tolerance is needed here.
+    @test ccdf(use_dist, 1e8) ≈ 0.0 atol=1e-15
     @test ccdf(use_dist, 0.0) ≈ 1
     @test logccdf(use_dist, 0.0) ≈ 0.0
 end
@@ -420,4 +393,45 @@ end
     q50 = quantile(truncated_dist, 0.5)
     @test 1.0 ≤ q50 ≤ 10.0
     @test cdf(truncated_dist, q50) ≈ 0.5 rtol=1e-4
+end
+
+@testitem "solver kwarg builds an AnalyticalSolver with that payload" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    custom = GaussLegendre(; n = 128)
+    d = primary_censored(Gamma(2.0, 1.5), Uniform(0, 1); solver = custom)
+
+    @test d.method isa AnalyticalSolver
+    @test d.method.solver === custom
+end
+
+@testitem "Default solver payload is GaussLegendre(64)" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    d = primary_censored(Gamma(2.0, 3.0), Uniform(0.0, 1.0))
+    @test d.method isa AnalyticalSolver
+    @test d.method.solver isa GaussLegendre
+    @test d.method.solver.n == 64
+end
+
+@testitem "Passing both method and solver errors" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    @test_throws ArgumentError primary_censored(
+        Gamma(2.0, 1.5), Uniform(0, 1);
+        method = NumericSolver(), solver = GaussLegendre(; n = 8))
+end
+
+@testitem "double_interval_censored forwards the solver payload" begin
+    using Distributions
+    using CensoredDistributions: GaussLegendre
+
+    custom = GaussLegendre(; n = 128)
+    d = double_interval_censored(Gamma(2.0, 1.5); upper = 10.0,
+        interval = 1.0, solver = custom)
+    pc = get_dist(get_dist(d))          # IntervalCensored -> Truncated -> PC
+    @test pc.method.solver === custom
 end

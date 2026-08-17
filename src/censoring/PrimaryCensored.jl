@@ -9,20 +9,24 @@ the sum of the primary event time and the delay.
 
 # Method Selection
 
-The CDF computation is handled by `primarycensored_cdf`, which dispatches on
-the `method`:
-- [`AnalyticalSolver`](@ref) (the default): closed-form solutions for these
-  distribution pairs with Uniform primary events, falling back to numeric
-  quadrature otherwise:
-  - `Gamma` delay distribution
-  - `LogNormal` delay distribution
-  - `Weibull` delay distribution
-- [`NumericSolver`](@ref): always uses quadrature integration, which may be
-  necessary for certain AD backends or when debugging.
+The distribution is a thin wrapper over
+`ConvolvedDistributions.Convolved((primary_event, dist))`. The default
+[`AnalyticalSolver`](@ref) uses ConvolvedDistributions' closed-form solutions
+for distribution pairs with `Uniform` primary events (see the
+[`convolved_cdf` implementations](https://github.com/EpiAware/ConvolvedDistributions.jl/blob/main/src/uniform_window.jl)
+for the supported families), falling back to its numeric quadrature otherwise.
+
+[`NumericSolver`](@ref) (re-exported from ConvolvedDistributions) always uses
+quadrature integration, which may be necessary for certain AD backends or
+when debugging.
 
 Passing the solver method as a concrete object keeps the return type concrete
 even when the delay parameters are runtime values (e.g. inside a probabilistic
-model), so it is preferred over the deprecated `force_numeric` flag.
+model). Each method carries the quadrature payload used on its numeric path:
+the default `GaussLegendre(; n = 64)`, a custom `GaussLegendre(; n = ...)` for
+higher nodal accuracy, or an Integrals.jl algorithm when that package is
+loaded. The payload is only consulted when quadrature is reached, so it has no
+effect on a pair with a closed form.
 
 # Arguments
 - `dist`: The delay distribution from primary event to observation
@@ -30,12 +34,11 @@ model), so it is preferred over the deprecated `force_numeric` flag.
 
 # Keyword Arguments
 - `method`: The solver method, an [`AnalyticalSolver`](@ref) or
-  [`NumericSolver`](@ref). Defaults to `AnalyticalSolver()`. Each takes an
-  optional quadrature solver, e.g. `NumericSolver(QuadGKJL())`.
-- `solver`: Quadrature solver used when `method` is not given (default:
-  `GaussLegendre(; n = 64)`, AD-friendly; pass `QuadGKJL()` for adaptive
-  accuracy).
-- `force_numeric`: Deprecated. Pass `method = NumericSolver()` instead.
+  [`NumericSolver`](@ref), re-exported from `ConvolvedDistributions`.
+  Defaults to `AnalyticalSolver()`.
+- `solver`: Quadrature payload used when `method` is not given (default:
+  `GaussLegendre(; n = 64)`). Passing both `method` and `solver` is an error;
+  put the payload inside the method instead, e.g. `NumericSolver(QuadGKJL())`.
 
 This is useful for modeling:
 - Infection-to-symptom onset times when infection time is uncertain
@@ -62,14 +65,14 @@ d_numeric = primary_censored(incubation, infection_window;
 ```
 
 # See also
-- [`primarycensored_cdf`](@ref): The underlying CDF computation with method dispatch
+- [`ConvolvedDistributions.Convolved`](@extref): The backing convolution
 "
 function primary_censored(
         dist::UnivariateDistribution, primary_event::UnivariateDistribution;
         method::Union{AbstractSolverMethod, Nothing} = nothing,
-        solver = GaussLegendre(; n = 64), force_numeric = nothing)
-    resolved = _resolve_solver_method(method, solver, force_numeric)
-    return PrimaryCensored(dist, primary_event, resolved)
+        solver = nothing)
+    resolved = _resolve_solver_method(method, solver)
+    return PrimaryCensored(dist, primary_event; method = resolved)
 end
 
 @doc "
@@ -95,9 +98,9 @@ function primary_censored(
         dist::UnivariateDistribution;
         primary_event::UnivariateDistribution = Uniform(0, 1),
         method::Union{AbstractSolverMethod, Nothing} = nothing,
-        solver = GaussLegendre(; n = 64), force_numeric = nothing)
+        solver = nothing)
     return primary_censored(dist, primary_event; method = method,
-        solver = solver, force_numeric = force_numeric)
+        solver = solver)
 end
 
 @doc "
@@ -112,25 +115,31 @@ The `method` field determines computation strategy:
   LogNormal, Weibull with Uniform primary), falls back to numeric otherwise
 - `NumericSolver`: Always uses quadrature integration
 
+All evaluation delegates to the wrapped
+[`ConvolvedDistributions.Convolved`](@extref) in the `convolved` field, built
+with the `method` supplied at construction.
+
 # See also
 - [`primary_censored`](@ref): Constructor function
-- [`primarycensored_cdf`](@ref): CDF computation with method dispatch
 "
 struct PrimaryCensored{
     D1 <: UnivariateDistribution, D2 <: UnivariateDistribution,
-    M <: AbstractSolverMethod} <:
-       UnivariateDistribution{Continuous}
+    C, M} <: UnivariateDistribution{Continuous}
     "The delay distribution from primary event to observation."
     dist::D1
     "The primary event time distribution."
     primary_event::D2
-    "The solver method for CDF computation."
+    "The wrapped ConvolvedDistributions.Convolved((primary_event, dist))."
+    convolved::C
+    "The solver method (ConvolvedDistributions.AbstractSolverMethod) for evaluation."
     method::M
 
     function PrimaryCensored(
-            dist::D1, primary_event::D2, method::M) where {
-            D1, D2, M <: AbstractSolverMethod}
-        new{D1, D2, M}(dist, primary_event, method)
+            dist::D1, primary_event::D2;
+            method::AbstractSolverMethod = AnalyticalSolver()) where {
+            D1 <: UnivariateDistribution, D2 <: UnivariateDistribution}
+        c = Convolved((primary_event, dist); method = method)
+        new{D1, D2, typeof(c), typeof(c.method)}(dist, primary_event, c, c.method)
     end
 end
 
@@ -140,10 +149,13 @@ function params(d::PrimaryCensored)
     return (d0params..., d1params...)
 end
 
-Base.eltype(::Type{<:PrimaryCensored{D}}) where {D} = promote_type(eltype(D), eltype(D))
-minimum(d::PrimaryCensored) = minimum(get_dist(d))
-maximum(d::PrimaryCensored) = maximum(get_dist(d))
-insupport(d::PrimaryCensored, x::Real) = insupport(get_dist(d), x)
+function Base.eltype(::Type{<:PrimaryCensored{D1, D2}}) where {D1, D2}
+    promote_type(eltype(D1), eltype(D2))
+end
+
+minimum(d::PrimaryCensored) = minimum(d.convolved)
+maximum(d::PrimaryCensored) = maximum(d.convolved)
+insupport(d::PrimaryCensored, x::Real) = insupport(d.convolved, x)
 
 @doc "
 
@@ -152,7 +164,7 @@ Compute the cumulative distribution function.
 See also: [`logcdf`](@ref)
 "
 function cdf(d::PrimaryCensored, x::Real)
-    primarycensored_cdf(get_dist(d), d.primary_event, x, d.method)
+    cdf(d.convolved, x)
 end
 
 @doc "
@@ -162,80 +174,35 @@ Compute the log cumulative distribution function.
 See also: [`cdf`](@ref)
 "
 function logcdf(d::PrimaryCensored, x::Real)
-    primarycensored_logcdf(get_dist(d), d.primary_event, x, d.method)
+    logcdf(d.convolved, x)
 end
 
 function ccdf(d::PrimaryCensored, x::Real)
-    result = 1 - cdf(d, x)
-    return result
+    ccdf(d.convolved, x)
 end
 
 function logccdf(d::PrimaryCensored, x::Real)
-    # Use log1mexp for numerical stability: log(1 - exp(logcdf))
-    logcdf_val = logcdf(d, x)
-
-    # Handle edge cases
-    if logcdf_val == -Inf
-        return 0.0  # log(1) when CDF = 0
-    elseif logcdf_val >= 0.0
-        return -Inf  # log(0) when CDF = 1
-    end
-
-    return log1mexp(logcdf_val)
+    logccdf(d.convolved, x)
 end
 
-#### PDF using numerical differentiation of CDF
 @doc "
 
-Compute the probability density function using numerical differentiation.
+Compute the probability density function.
 
 See also: [`logpdf`](@ref)
 "
 function pdf(d::PrimaryCensored, x::Real)
-    return exp(logpdf(d, x))
+    pdf(d.convolved, x)
 end
 
 @doc "
 
-Compute the log probability density function using numerical differentiation
-of the log CDF.
+Compute the log probability density function.
 
 See also: [`pdf`](@ref), [`logcdf`](@ref)
 "
 function logpdf(d::PrimaryCensored, x::Real)
-    if !insupport(d, x)
-        return -Inf
-    end
-
-    # Use central difference for numerical differentiation
-    h = 1e-8  # Small step size for differentiation
-    x_lower = max(x - h/2, minimum(d))
-    x_upper = min(x + h/2, maximum(d))
-
-    # Handle edge cases where we can't center the difference
-    # Guard logsubexp: numerical noise in the CDF can make
-    # the upper value smaller than the lower, which would
-    # cause DomainError in logsubexp (log of negative)
-    if x_lower == minimum(d)
-        # Forward difference at minimum
-        logcdf_upper = logcdf(d, x + h)
-        logcdf_x = logcdf(d, x)
-        logcdf_upper <= logcdf_x && return -Inf
-        return logsubexp(logcdf_upper, logcdf_x) - log(h)
-    elseif x_upper == maximum(d)
-        # Backward difference at maximum
-        logcdf_x = logcdf(d, x)
-        logcdf_lower = logcdf(d, x - h)
-        logcdf_x <= logcdf_lower && return -Inf
-        return logsubexp(logcdf_x, logcdf_lower) - log(h)
-    else
-        # Central difference for interior points
-        logcdf_upper = logcdf(d, x_upper)
-        logcdf_lower = logcdf(d, x_lower)
-        logcdf_upper <= logcdf_lower && return -Inf
-        return logsubexp(logcdf_upper, logcdf_lower) -
-               log(x_upper - x_lower)
-    end
+    logpdf(d.convolved, x)
 end
 
 #### Quantile function using numerical optimization
@@ -244,17 +211,15 @@ end
 
 Compute the quantile (inverse CDF) using numerical optimization.
 
+Inverts `cdf(d, ·)` via `quantile_by_optimization`, seeded with a custom
+initial guess.
+
 See also: [`cdf`](@ref)
 "
 function quantile(d::PrimaryCensored, p::Real)
-    # Custom initial guess: underlying quantile + mean of primary event
-    initial_guess_fn = function (d, p)
-        underlying_quantile = quantile(get_dist(d), p)
-        primary_mean = mean(d.primary_event)
-        return [underlying_quantile + primary_mean]
-    end
-
-    return _quantile_optimization(d, p; initial_guess_fn = initial_guess_fn)
+    initial_guess = [0 <= p <= 1 ?
+                     quantile(d.dist, p) + mean(d.primary_event) : p]
+    return quantile_by_optimization(d, p, initial_guess)
 end
 
 #### Sampling
@@ -267,7 +232,7 @@ distributions.
 See also: [`quantile`](@ref)
 "
 function Base.rand(rng::AbstractRNG, d::PrimaryCensored)
-    rand(rng, get_dist(d)) + rand(rng, d.primary_event)
+    rand(rng, d.convolved)
 end
 
 function Base.rand(
@@ -285,3 +250,16 @@ end
 
 # Sampler method for efficient sampling
 sampler(d::PrimaryCensored) = d
+
+# Resolve the solver method from the keyword arguments. Dispatching on the
+# argument types keeps the return type concrete without relying on constant
+# propagation through nested keyword calls.
+_resolve_solver_method(::Nothing, ::Nothing) = AnalyticalSolver()
+_resolve_solver_method(::Nothing, solver) = AnalyticalSolver(solver)
+_resolve_solver_method(method::AbstractSolverMethod, ::Nothing) = method
+
+function _resolve_solver_method(method::AbstractSolverMethod, solver)
+    throw(ArgumentError(
+        "pass either `method` or `solver`, not both; put the quadrature " *
+        "payload inside the method, e.g. `NumericSolver($solver)`"))
+end

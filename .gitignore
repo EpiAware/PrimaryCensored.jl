@@ -67,6 +67,8 @@ distributions-knowledge-base.md
 lcov.info
 lcov-ad.info
 worktree-*
+worktrees/
+.pi-subagents/
 
 # Documentation dependencies
 docs/node_modules/

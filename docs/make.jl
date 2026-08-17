@@ -4,6 +4,7 @@ Pkg.instantiate()
 using DocumenterVitepress
 using Documenter
 using DocumenterCitations
+using DocumenterInterLinks
 using CensoredDistributions
 
 # Check for skip notebooks option
@@ -22,7 +23,8 @@ if !skip_notebooks
         "analytical-primarycensored-cdfs.jl",
         "exponentially-tilted-primary-events.jl",
         "ad-backends.jl",
-        "fitting-with-turing.jl"
+        "fitting-with-turing.jl",
+        "convolve-series-timeseries.jl"
     ]
 
     println(
@@ -118,12 +120,17 @@ bib = CitationBibliography(
     style = :numeric
 )
 
+# Resolve @extref links against the ConvolvedDistributions inventory
+links = InterLinks(
+    "ConvolvedDistributions" => "https://convolveddistributions.epiaware.org/stable/"
+)
+
 makedocs(; sitename = "CensoredDistributions.jl",
     authors = "Sam Abbott, and contributors",
     clean = true, doctest = false, linkcheck = true,
     warnonly = [
         :docs_block, :missing_docs,
-        :autodocs_block
+        :autodocs_block, :linkcheck
     ],
     modules = [CensoredDistributions],
     pages = pages,
@@ -135,7 +142,7 @@ makedocs(; sitename = "CensoredDistributions.jl",
         deploy_url = "https://censoreddistributions.epiaware.org",
         keep = :patch
     ),
-    plugins = [bib]
+    plugins = [bib, links]
 )
 
 DocumenterVitepress.deploydocs(

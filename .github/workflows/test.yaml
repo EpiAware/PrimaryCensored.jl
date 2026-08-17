@@ -14,8 +14,18 @@ concurrency:
 jobs:
   test:
     uses: EpiAware/.github/.github/workflows/tests.yml@8c1e09003b9cf0d2eb3cbec7aa726855bb365ac5
+    # lts (1.10) excluded: the package floors julia at 1.11 (EpiAwareADTools
+    # 0.2 / ConvolvedDistributions 0.4.2 both dropped 1.10 support).
+    with:
+      julia_versions: '["1", "pre"]'
     secrets: inherit  # pragma: allowlist secret
 
   downgrade-compat:
     uses: EpiAware/.github/.github/workflows/downgrade.yml@8c1e09003b9cf0d2eb3cbec7aa726855bb365ac5
+    # downgrade.yml defaults julia_version to '1.10', which the package no
+    # longer supports (julia floor is 1.11). '1' not '1.11': mirrors
+    # ConvolvedDistributions.jl / ModifiedDistributions.jl /
+    # DistributionsInference.jl's downgrade-compat config.
+    with:
+      julia_version: '1'
     secrets: inherit  # pragma: allowlist secret
