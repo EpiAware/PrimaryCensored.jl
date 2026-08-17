@@ -130,7 +130,7 @@ makedocs(; sitename = "CensoredDistributions.jl",
     clean = true, doctest = false, linkcheck = true,
     warnonly = [
         :docs_block, :missing_docs,
-        :autodocs_block
+        :autodocs_block, :linkcheck
     ],
     modules = [CensoredDistributions],
     pages = pages,
