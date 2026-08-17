@@ -480,7 +480,8 @@ You can force the numerical backend with
 `method = NumericSolver()` when you want quadrature
 (ConvolvedDistributions' [`NumericSolver`](@ref)).
 Each method also carries a quadrature payload: the default is a
-64-node [`GaussLegendre`](@ref) rule, but a higher node count or, with
+64-node [`ConvolvedDistributions.GaussLegendre`](@extref) rule, but a
+higher node count or, with
 Integrals.jl loaded, an Integrals.jl algorithm can be substituted via
 the `solver` keyword or by wrapping it inside `method` directly:
 """
