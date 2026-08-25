@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   coverage:
-    uses: EpiAware/.github/.github/workflows/coverage.yml@8c1e09003b9cf0d2eb3cbec7aa726855bb365ac5
+    uses: EpiAware/.github/.github/workflows/coverage.yml@25424fb7f3b6bec94209bab86a42971bd01621ea
     with:
       julia_version: '1'
     secrets: inherit  # pragma: allowlist secret

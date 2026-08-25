@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   Documenter:
-    uses: EpiAware/.github/.github/workflows/documentation.yml@8c1e09003b9cf0d2eb3cbec7aa726855bb365ac5
+    uses: EpiAware/.github/.github/workflows/documentation.yml@25424fb7f3b6bec94209bab86a42971bd01621ea
     # Case-study docs run MCMC sampling, so the org default of 45 minutes is
     # too tight; run 30292089587 was killed at 45.5 minutes.
     with:
